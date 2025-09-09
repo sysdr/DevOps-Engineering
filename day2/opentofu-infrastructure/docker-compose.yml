@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: opentofu-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/app
+      - AWS_DEFAULT_REGION=us-west-2
+    volumes:
+      - ./infrastructure:/app/infrastructure:ro
+      - ./modules:/app/modules:ro
+    networks:
+      - opentofu-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: opentofu-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - opentofu-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  opentofu-network:
+    driver: bridge
