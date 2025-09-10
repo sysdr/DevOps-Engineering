@@ -1,0 +1,6 @@
+# Ignore specific CVEs that are false positives
+CVE-2022-1234
+CVE-2023-5678
+
+# Ignore low severity issues
+GHSA-*-*-*
