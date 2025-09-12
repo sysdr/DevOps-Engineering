@@ -1,0 +1,1 @@
+"admin" "md5$(echo -n 'secure_password_123admin' | md5sum | cut -d' ' -f1)"

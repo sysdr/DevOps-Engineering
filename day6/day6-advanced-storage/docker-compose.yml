@@ -1,0 +1,102 @@
+version: '3.8'
+services:
+  postgres-primary:
+    image: postgres:15-alpine
+    container_name: postgres-primary
+    environment:
+      POSTGRES_DB: productiondb
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: secure_password_123
+      POSTGRES_REPLICATION_USER: replicator
+      POSTGRES_REPLICATION_PASSWORD: repl_pass_123
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./config/postgres/postgresql.conf:/etc/postgresql/postgresql.conf
+      - ./config/postgres/pg_hba.conf:/etc/postgresql/pg_hba.conf
+      - postgres_primary_data:/var/lib/postgresql/data
+      - ./docker/postgres/init-primary.sql:/docker-entrypoint-initdb.d/init.sql
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
+    networks:
+      - db_network
+
+  postgres-replica:
+    image: postgres:15-alpine
+    container_name: postgres-replica
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: secure_password_123
+      PGUSER: admin
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_replica_data:/var/lib/postgresql/data
+      - ./docker/postgres/init-replica.sh:/docker-entrypoint-initdb.d/init-replica.sh
+    depends_on:
+      - postgres-primary
+    networks:
+      - db_network
+
+  pgbouncer:
+    image: pgbouncer/pgbouncer:latest
+    container_name: pgbouncer
+    environment:
+      DATABASES_HOST: postgres-primary
+      DATABASES_PORT: 5432
+      DATABASES_USER: admin
+      DATABASES_PASSWORD: secure_password_123
+      DATABASES_DBNAME: productiondb
+      POOL_MODE: transaction
+      MAX_CLIENT_CONN: 1000
+      DEFAULT_POOL_SIZE: 25
+    ports:
+      - "6432:5432"
+    volumes:
+      - ./config/pgbouncer/pgbouncer.ini:/etc/pgbouncer/pgbouncer.ini
+      - ./config/pgbouncer/userlist.txt:/etc/pgbouncer/userlist.txt
+    depends_on:
+      - postgres-primary
+    networks:
+      - db_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis-cache
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - db_network
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - db_network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3001:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin123
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - db_network
+
+volumes:
+  postgres_primary_data:
+  postgres_replica_data:
+  redis_data:
+  grafana_data:
+
+networks:
+  db_network:
+    driver: bridge
