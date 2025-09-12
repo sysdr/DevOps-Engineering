@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wasm-edge-api
+  namespace: wasm-edge-platform
+  labels:
+    app: wasm-edge-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: wasm-edge-api
+  template:
+    metadata:
+      labels:
+        app: wasm-edge-api
+    spec:
+      containers:
+      - name: api
+        image: wasm-edge-platform:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: ENVIRONMENT
+          value: "production"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /edge/status
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
