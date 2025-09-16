@@ -1,0 +1,40 @@
+name: Deploy to Production
+
+on:
+  workflow_run:
+    workflows: ["Deploy to Staging"]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy-production:
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    environment: production
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials with OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_PRODUCTION_ROLE_ARN }}
+          role-session-name: GitHubActionsProduction
+          aws-region: us-east-1
+
+      - name: Deploy to production
+        uses: ./.github/actions/composite-deploy
+        with:
+          environment: production
+          image-tag: ${{ github.sha }}
+          aws-region: us-east-1
+          
+      - name: Run production health checks
+        run: |
+          echo "Running production health checks..."
+          # Add production health check commands here

@@ -1,0 +1,45 @@
+name: Deploy to Staging
+
+on:
+  workflow_run:
+    workflows: ["Matrix CI Pipeline"]
+    types: [completed]
+    branches: [develop]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy-staging:
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    environment: staging
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials with OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_STAGING_ROLE_ARN }}
+          role-session-name: GitHubActionsStaging
+          aws-region: us-east-1
+
+      - name: Deploy to staging
+        uses: ./.github/actions/composite-deploy
+        with:
+          environment: staging
+          image-tag: ${{ github.sha }}
+          aws-region: us-east-1
+          
+      - name: Run staging tests
+        run: |
+          echo "Running staging integration tests..."
+          # Add staging test commands here
+          
+      - name: Notify deployment
+        if: always()
+        run: |
+          echo "Staging deployment completed with status: ${{ job.status }}"

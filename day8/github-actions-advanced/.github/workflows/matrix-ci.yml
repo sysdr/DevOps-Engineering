@@ -1,0 +1,180 @@
+name: Matrix CI Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      api-service: ${{ steps.changes.outputs.api-service }}
+      user-service: ${{ steps.changes.outputs.user-service }}
+      frontend: ${{ steps.changes.outputs.frontend }}
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Detect changes
+        id: changes
+        run: |
+          if git diff --name-only HEAD~1 | grep -q "api-service/"; then
+            echo "api-service=true" >> $GITHUB_OUTPUT
+          else
+            echo "api-service=false" >> $GITHUB_OUTPUT
+          fi
+          
+          if git diff --name-only HEAD~1 | grep -q "user-service/"; then
+            echo "user-service=true" >> $GITHUB_OUTPUT
+          else
+            echo "user-service=false" >> $GITHUB_OUTPUT
+          fi
+          
+          if git diff --name-only HEAD~1 | grep -q "frontend/"; then
+            echo "frontend=true" >> $GITHUB_OUTPUT
+          else
+            echo "frontend=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Set matrix
+        id: set-matrix
+        run: |
+          services=()
+          if [[ "${{ steps.changes.outputs.api-service }}" == "true" ]]; then
+            services+=('{"service": "api-service", "path": "api-service", "port": 8000}')
+          fi
+          if [[ "${{ steps.changes.outputs.user-service }}" == "true" ]]; then
+            services+=('{"service": "user-service", "path": "user-service", "port": 8001}')
+          fi
+          
+          if [ ${#services[@]} -eq 0 ]; then
+            # If no services changed, test all
+            matrix='{"include": [{"service": "api-service", "path": "api-service", "port": 8000}, {"service": "user-service", "path": "user-service", "port": 8001}]}'
+          else
+            matrix="{\"include\": [$(IFS=,; echo "${services[*]}")]}"
+          fi
+          
+          echo "matrix=$matrix" >> $GITHUB_OUTPUT
+
+  test-services:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.matrix != ''
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.detect-changes.outputs.matrix) }}
+    
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Test ${{ matrix.service }}
+        uses: ./.github/workflows/reusable-test.yml
+        with:
+          service-path: ${{ matrix.path }}
+          cache-key-prefix: ${{ matrix.service }}
+
+  test-frontend:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.frontend == 'true'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run tests
+        working-directory: frontend
+        run: npm test -- --coverage --watchAll=false
+
+      - name: Build
+        working-directory: frontend
+        run: npm run build
+
+  security-scan:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  build-and-push:
+    needs: [test-services, test-frontend]
+    if: always() && (needs.test-services.result == 'success' || needs.test-services.result == 'skipped') && (needs.test-frontend.result == 'success' || needs.test-frontend.result == 'skipped')
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [api-service, user-service, frontend]
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.service }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: ./${{ matrix.service }}
+          file: ./${{ matrix.service }}/docker/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
