@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  security-api:
+    build: 
+      context: .
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/app
+    volumes:
+      - ./config:/app/config
+      - ./logs:/app/logs
+    networks:
+      - security-net
+
+  opa:
+    image: openpolicyagent/opa:latest
+    ports:
+      - "8181:8181"
+    command: run --server --log-level debug
+    networks:
+      - security-net
+
+networks:
+  security-net:
+    driver: bridge

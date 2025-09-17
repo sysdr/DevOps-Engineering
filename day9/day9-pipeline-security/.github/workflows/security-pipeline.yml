@@ -1,0 +1,52 @@
+name: Security Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Security scan with Bandit
+      run: bandit -r src/ -f json -o bandit-report.json || true
+    
+    - name: Dependency vulnerability scan
+      run: safety check --json || true
+    
+    - name: Run tests
+      run: pytest tests/ -v --cov=src
+    
+    - name: Generate SBOM
+      run: |
+        python -c "
+        import asyncio
+        from src.scanner.vulnerability_scanner import VulnerabilityScanner
+        async def main():
+            scanner = VulnerabilityScanner()
+            await scanner.generate_sbom('.')
+        asyncio.run(main())
+        "
+    
+    - name: Upload security artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-reports
+        path: |
+          bandit-report.json
+          sbom.json
