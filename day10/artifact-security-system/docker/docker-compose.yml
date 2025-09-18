@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  harbor-registry:
+    image: goharbor/registry-photon:v2.9.0
+    container_name: harbor-registry
+    restart: always
+    volumes:
+      - harbor_registry:/storage
+    environment:
+      - REGISTRY_AUTH=token
+      - REGISTRY_AUTH_TOKEN_REALM=http://localhost:8080/service/token
+      - REGISTRY_AUTH_TOKEN_SERVICE=harbor-registry
+      - REGISTRY_AUTH_TOKEN_ISSUER=harbor-token-issuer
+      - REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY=/storage
+    ports:
+      - "5000:5000"
+    networks:
+      - harbor
+
+  harbor-core:
+    image: goharbor/harbor-core:v2.9.0
+    container_name: harbor-core
+    restart: always
+    volumes:
+      - ./harbor/core:/etc/core
+    environment:
+      - CORE_SECRET=harbor_secret
+      - REGISTRY_URL=http://harbor-registry:5000
+    ports:
+      - "8080:8080"
+    networks:
+      - harbor
+    depends_on:
+      - harbor-registry
+
+  redis:
+    image: redis:7-alpine
+    container_name: harbor-redis
+    restart: always
+    volumes:
+      - redis_data:/data
+    networks:
+      - harbor
+
+  postgres:
+    image: postgres:13-alpine
+    container_name: harbor-db
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=harbor_db_password
+      - POSTGRES_USER=harbor
+      - POSTGRES_DB=harbor
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - harbor
+
+volumes:
+  harbor_registry:
+  redis_data:
+  postgres_data:
+
+networks:
+  harbor:
+    driver: bridge
