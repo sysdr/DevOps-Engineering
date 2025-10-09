@@ -1,0 +1,15 @@
+apiVersion: platform.devops/v1
+kind: WebApp
+metadata:
+  name: demo-webapp
+  namespace: default
+spec:
+  replicas: 3
+  image: nginx:1.21
+  port: 80
+  resources:
+    cpu: "100m"
+    memory: "128Mi"
+  affinity:
+    zone: "us-west-2a"
+    nodeType: "general"

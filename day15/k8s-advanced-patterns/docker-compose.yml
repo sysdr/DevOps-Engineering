@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  operator:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.mock-operator
+    container_name: webapp-operator
+    environment:
+      - METRICS_PORT=8000
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+    volumes:
+      - ~/.kube:/home/operator/.kube:ro
+    networks:
+      - webapp-net
+
+  dashboard:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.dashboard
+    container_name: webapp-dashboard
+    ports:
+      - "3000:80"
+    depends_on:
+      - operator
+    networks:
+      - webapp-net
+
+networks:
+  webapp-net:
+    driver: bridge
