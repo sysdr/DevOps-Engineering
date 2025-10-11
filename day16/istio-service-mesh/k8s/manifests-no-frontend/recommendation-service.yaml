@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: recommendation-service-v1
+  labels:
+    app: recommendation-service
+    version: v1
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: recommendation-service
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: recommendation-service
+        version: v1
+    spec:
+      containers:
+      - name: recommendation-service
+        image: recommendation-service:latest
+        ports:
+        - containerPort: 8080
+        imagePullPolicy: Never
+        env:
+        - name: SERVICE_VERSION
+          value: "v1"
+        - name: JAEGER_AGENT_HOST
+          value: "jaeger-agent"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: recommendation-service-v2
+  labels:
+    app: recommendation-service
+    version: v2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: recommendation-service
+      version: v2
+  template:
+    metadata:
+      labels:
+        app: recommendation-service
+        version: v2
+    spec:
+      containers:
+      - name: recommendation-service
+        image: recommendation-service:latest
+        ports:
+        - containerPort: 8080
+        imagePullPolicy: Never
+        env:
+        - name: SERVICE_VERSION
+          value: "v2"
+        - name: JAEGER_AGENT_HOST
+          value: "jaeger-agent"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: recommendation-service
+  labels:
+    app: recommendation-service
+spec:
+  ports:
+  - port: 8080
+    name: http
+  selector:
+    app: recommendation-service
