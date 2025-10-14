@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPU Orchestration Platform</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <h1>🚀 GPU Orchestration Platform</h1>
+            <div class="header-stats">
+                <div class="stat-card">
+                    <span class="stat-value" id="total-gpus">0</span>
+                    <span class="stat-label">Total GPUs</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="avg-utilization">0%</span>
+                    <span class="stat-label">Avg Utilization</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="hourly-cost">$0</span>
+                    <span class="stat-label">Hourly Cost</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="dashboard-main">
+            <div class="dashboard-grid">
+                <!-- GPU Resources Panel -->
+                <section class="panel gpu-resources-panel">
+                    <h2>GPU Resources</h2>
+                    <div id="gpu-resources-container">
+                        <!-- GPU cards will be populated here -->
+                    </div>
+                </section>
+
+                <!-- Workload Submission Panel -->
+                <section class="panel workload-panel">
+                    <h2>Submit Workload</h2>
+                    <form id="workload-form" class="workload-form">
+                        <div class="form-group">
+                            <label for="workload-name">Workload Name</label>
+                            <input type="text" id="workload-name" name="name" required 
+                                   placeholder="e.g., BERT Training Job">
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="workload-type">Type</label>
+                                <select id="workload-type" name="workload_type" required>
+                                    <option value="training">Training</option>
+                                    <option value="inference">Inference</option>
+                                    <option value="batch">Batch Processing</option>
+                                    <option value="interactive">Interactive</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="gpu-count">GPU Count</label>
+                                <input type="number" id="gpu-count" name="gpu_count" 
+                                       min="1" max="8" value="1" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="memory-required">Memory Required (GB)</label>
+                                <input type="number" id="memory-required" name="gpu_memory_gb" 
+                                       min="1" max="80" value="16" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="max-duration">Max Duration (hours)</label>
+                                <input type="number" id="max-duration" name="max_duration_hours" 
+                                       min="1" max="72" value="4" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="priority">Priority</label>
+                                <select id="priority" name="priority" required>
+                                    <option value="1">Low</option>
+                                    <option value="2" selected>Normal</option>
+                                    <option value="3">High</option>
+                                    <option value="4">Critical</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="framework">Framework</label>
+                                <select id="framework" name="framework" required>
+                                    <option value="pytorch">PyTorch</option>
+                                    <option value="tensorflow">TensorFlow</option>
+                                    <option value="jax">JAX</option>
+                                    <option value="custom">Custom</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="submit-button">Submit Workload</button>
+                    </form>
+                </section>
+
+                <!-- Active Workloads Panel -->
+                <section class="panel workloads-panel">
+                    <h2>Active Workloads</h2>
+                    <div id="active-workloads-container">
+                        <!-- Active workloads will be populated here -->
+                    </div>
+                </section>
+
+                <!-- Utilization Chart Panel -->
+                <section class="panel chart-panel">
+                    <h2>GPU Utilization Trends</h2>
+                    <canvas id="utilization-chart"></canvas>
+                </section>
+
+                <!-- Cost Analysis Panel -->
+                <section class="panel cost-panel">
+                    <h2>Cost Analysis & Recommendations</h2>
+                    <div id="cost-analysis-container">
+                        <!-- Cost analysis will be populated here -->
+                    </div>
+                </section>
+
+                <!-- Performance Metrics Panel -->
+                <section class="panel metrics-panel">
+                    <h2>Real-time Metrics</h2>
+                    <div id="metrics-container">
+                        <!-- Metrics will be populated here -->
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="/static/js/dashboard.js"></script>
+</body>
+</html>

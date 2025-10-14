@@ -1,0 +1,60 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pytorch-training-job
+  namespace: gpu-workloads
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: pytorch-training
+        image: pytorch/pytorch:2.3.1-cuda12.1-cudnn8-runtime
+        command: ["python", "-c"]
+        args:
+        - |
+          import torch
+          import time
+          
+          print(f"CUDA available: {torch.cuda.is_available()}")
+          print(f"GPU count: {torch.cuda.device_count()}")
+          
+          if torch.cuda.is_available():
+              device = torch.device("cuda")
+              print(f"Using GPU: {torch.cuda.get_device_name(0)}")
+              
+              # Simple training simulation
+              model = torch.nn.Linear(1000, 1000).to(device)
+              optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
+              
+              for epoch in range(100):
+                  data = torch.randn(64, 1000).to(device)
+                  target = torch.randn(64, 1000).to(device)
+                  
+                  optimizer.zero_grad()
+                  output = model(data)
+                  loss = torch.nn.functional.mse_loss(output, target)
+                  loss.backward()
+                  optimizer.step()
+                  
+                  if epoch % 10 == 0:
+                      print(f"Epoch {epoch}, Loss: {loss.item():.4f}")
+                  
+                  time.sleep(1)  # Simulate training time
+              
+              print("Training completed!")
+          else:
+              print("No GPU available, running on CPU")
+        resources:
+          limits:
+            nvidia.com/gpu: 1
+            memory: "8Gi"
+          requests:
+            nvidia.com/gpu: 1
+            memory: "4Gi"
+      nodeSelector:
+        accelerator: nvidia-tesla-a100  # Target specific GPU type
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule
