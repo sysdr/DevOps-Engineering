@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.backend
+    ports:
+      - "8000:8000"
+    environment:
+      - POSTGRES_HOST=postgres-primary
+      - POSTGRES_DB=statefuldb
+      - POSTGRES_USER=dbuser
+      - POSTGRES_PASSWORD=secure123
+    depends_on:
+      - postgres-primary
+    networks:
+      - monitoring-net
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - monitoring-net
+
+  postgres-primary:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=statefuldb
+      - POSTGRES_USER=dbuser
+      - POSTGRES_PASSWORD=secure123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - monitoring-net
+
+networks:
+  monitoring-net:
+    driver: bridge
+
+volumes:
+  postgres_data:

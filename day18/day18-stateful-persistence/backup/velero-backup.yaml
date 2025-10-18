@@ -1,0 +1,46 @@
+apiVersion: velero.io/v1
+kind: Backup
+metadata:
+  name: postgres-daily-backup
+  namespace: velero
+spec:
+  includedNamespaces:
+  - default
+  includedResources:
+  - persistentvolumes
+  - persistentvolumeclaims
+  - statefulsets
+  - services
+  - configmaps
+  - secrets
+  labelSelector:
+    matchLabels:
+      app: postgres
+  storageLocation: aws-backup-location
+  volumeSnapshotLocations:
+  - aws-snapshot-location
+  ttl: 720h  # 30 days
+  
+---
+apiVersion: velero.io/v1
+kind: Schedule
+metadata:
+  name: postgres-backup-schedule
+  namespace: velero
+spec:
+  schedule: "0 2 * * *"  # Daily at 2 AM
+  template:
+    includedNamespaces:
+    - default
+    includedResources:
+    - persistentvolumes
+    - persistentvolumeclaims
+    - statefulsets
+    - services
+    - configmaps
+    - secrets
+    labelSelector:
+      matchLabels:
+        app: postgres
+    storageLocation: aws-backup-location
+    ttl: 720h
