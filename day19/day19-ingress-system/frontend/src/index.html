@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ingress & Load Balancing Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2d5016 0%, #8b4513 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1a472a 0%, #d2691e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 30px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            border: 1px solid #e0e6ed;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        }
+        
+        .card h3 {
+            color: #1a472a;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            border-bottom: 2px solid #d2691e;
+            padding-bottom: 10px;
+        }
+        
+        .metrics {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        .metric-value {
+            font-weight: bold;
+            color: #228b22;
+            font-size: 1.2rem;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-healthy { background-color: #228b22; }
+        .status-warning { background-color: #ff8c00; }
+        .status-error { background-color: #dc143c; }
+        
+        .button {
+            background: linear-gradient(135deg, #228b22, #1a5f1a);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+        
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(34, 139, 34, 0.4);
+        }
+        
+        .log-container {
+            background: #1a472a;
+            color: #f0f8f0;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        
+        .progress-bar {
+            background: #ecf0f1;
+            border-radius: 10px;
+            overflow: hidden;
+            height: 20px;
+            margin: 10px 0;
+        }
+        
+        .progress-fill {
+            background: linear-gradient(90deg, #228b22, #32cd32);
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Ingress & Load Balancing Dashboard</h1>
+            <p>Day 19: Advanced Traffic Management & SSL Automation</p>
+        </div>
+        
+        <div class="dashboard">
+            <div class="card">
+                <h3>🔒 SSL/TLS Status</h3>
+                <div class="metrics">
+                    <span>Certificate Status:</span>
+                    <span class="metric-value" id="ssl-status">
+                        <span class="status-indicator status-healthy"></span>Active
+                    </span>
+                </div>
+                <div class="metrics">
+                    <span>Protocol:</span>
+                    <span class="metric-value" id="ssl-protocol">HTTPS</span>
+                </div>
+                <div class="metrics">
+                    <span>Auto Renewal:</span>
+                    <span class="metric-value">✅ Enabled</span>
+                </div>
+                <button class="button" onclick="checkSSL()">Check SSL Info</button>
+            </div>
+            
+            <div class="card">
+                <h3>⚡ Rate Limiting</h3>
+                <div class="metrics">
+                    <span>Requests/Min:</span>
+                    <span class="metric-value" id="rate-limit">0 / 100</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="rate-progress" style="width: 0%"></div>
+                </div>
+                <div class="metrics">
+                    <span>Status:</span>
+                    <span class="metric-value" id="rate-status">
+                        <span class="status-indicator status-healthy"></span>Normal
+                    </span>
+                </div>
+                <button class="button" onclick="simulateTraffic()">Simulate Traffic</button>
+            </div>
+            
+            <div class="card">
+                <h3>🔄 Load Balancing</h3>
+                <div class="metrics">
+                    <span>Active Backends:</span>
+                    <span class="metric-value" id="backend-count">3</span>
+                </div>
+                <div class="metrics">
+                    <span>Health Checks:</span>
+                    <span class="metric-value">
+                        <span class="status-indicator status-healthy"></span>All Healthy
+                    </span>
+                </div>
+                <div class="metrics">
+                    <span>Load Distribution:</span>
+                    <span class="metric-value">Round Robin</span>
+                </div>
+                <button class="button" onclick="checkServices()">Check Services</button>
+            </div>
+            
+            <div class="card">
+                <h3>📊 Performance Metrics</h3>
+                <div class="metrics">
+                    <span>Response Time:</span>
+                    <span class="metric-value" id="response-time">--</span>
+                </div>
+                <div class="metrics">
+                    <span>Throughput:</span>
+                    <span class="metric-value" id="throughput">--</span>
+                </div>
+                <div class="metrics">
+                    <span>Success Rate:</span>
+                    <span class="metric-value">99.9%</span>
+                </div>
+                <button class="button" onclick="loadTest()">Run Load Test</button>
+            </div>
+            
+            <div class="card" style="grid-column: 1 / -1;">
+                <h3>📝 System Logs</h3>
+                <div class="log-container" id="logs">
+                    <div>🚀 System initialized successfully</div>
+                    <div>🔒 SSL certificates validated</div>
+                    <div>⚡ Rate limiting configured: 100 req/min</div>
+                    <div>🔄 Load balancer health checks started</div>
+                    <div>📊 Metrics collection active</div>
+                </div>
+                <button class="button" onclick="clearLogs()">Clear Logs</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE_URL = 'http://localhost:8000';
+        let requestCount = 0;
+        let logCounter = 0;
+        
+        function addLog(message) {
+            const logs = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString();
+            logs.innerHTML += `<div>[${timestamp}] ${message}</div>`;
+            logs.scrollTop = logs.scrollHeight;
+        }
+        
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = '';
+            addLog('🧹 Logs cleared');
+        }
+        
+        async function checkSSL() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/ssl-info`);
+                const data = await response.json();
+                
+                document.getElementById('ssl-protocol').textContent = data.protocol.toUpperCase();
+                addLog(`🔒 SSL check: ${data.ssl_terminated ? 'Terminated at ingress' : 'Direct connection'}`);
+            } catch (error) {
+                addLog('❌ SSL check failed: ' + error.message);
+            }
+        }
+        
+        async function simulateTraffic() {
+            const button = event.target;
+            button.disabled = true;
+            button.textContent = 'Generating Traffic...';
+            
+            for (let i = 0; i < 10; i++) {
+                requestCount++;
+                updateRateLimit();
+                
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/load-test`);
+                    const data = await response.json();
+                    addLog(`⚡ Request ${requestCount}: ${data.processing_time.toFixed(3)}s`);
+                } catch (error) {
+                    if (error.message.includes('429')) {
+                        addLog('🚫 Rate limit exceeded!');
+                        break;
+                    }
+                }
+                
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            
+            button.disabled = false;
+            button.textContent = 'Simulate Traffic';
+        }
+        
+        function updateRateLimit() {
+            const limit = 100;
+            const percentage = Math.min((requestCount % limit) / limit * 100, 100);
+            
+            document.getElementById('rate-limit').textContent = `${requestCount % limit} / ${limit}`;
+            document.getElementById('rate-progress').style.width = `${percentage}%`;
+            
+            if (percentage > 80) {
+                document.getElementById('rate-status').innerHTML = 
+                    '<span class="status-indicator status-warning"></span>High';
+            } else {
+                document.getElementById('rate-status').innerHTML = 
+                    '<span class="status-indicator status-healthy"></span>Normal';
+            }
+        }
+        
+        async function checkServices() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/services`);
+                const data = await response.json();
+                
+                document.getElementById('backend-count').textContent = data.services.length;
+                addLog(`🔄 Health check: ${data.services.length} services healthy`);
+                
+                data.services.forEach(service => {
+                    addLog(`  ✅ ${service.name} v${service.version}: ${service.status}`);
+                });
+            } catch (error) {
+                addLog('❌ Service check failed: ' + error.message);
+            }
+        }
+        
+        async function loadTest() {
+            const startTime = Date.now();
+            const promises = [];
+            const testRequests = 20;
+            
+            addLog(`🚀 Starting load test with ${testRequests} concurrent requests`);
+            
+            for (let i = 0; i < testRequests; i++) {
+                promises.push(fetch(`${API_BASE_URL}/api/load-test`).then(r => r.json()));
+            }
+            
+            try {
+                const results = await Promise.all(promises);
+                const endTime = Date.now();
+                const totalTime = (endTime - startTime) / 1000;
+                const avgResponseTime = results.reduce((sum, r) => sum + r.processing_time, 0) / results.length;
+                
+                document.getElementById('response-time').textContent = `${avgResponseTime.toFixed(3)}s avg`;
+                document.getElementById('throughput').textContent = `${(testRequests / totalTime).toFixed(1)} req/s`;
+                
+                addLog(`📊 Load test completed: ${testRequests} requests in ${totalTime.toFixed(2)}s`);
+                addLog(`📈 Throughput: ${(testRequests / totalTime).toFixed(1)} req/s`);
+                addLog(`⏱️ Avg response time: ${avgResponseTime.toFixed(3)}s`);
+            } catch (error) {
+                addLog('❌ Load test failed: ' + error.message);
+            }
+        }
+        
+        // Auto-refresh metrics every 30 seconds
+        setInterval(() => {
+            checkSSL();
+            checkServices();
+        }, 30000);
+    </script>
+</body>
+</html>
