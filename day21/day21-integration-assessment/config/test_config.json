@@ -1,0 +1,28 @@
+{
+  "services": {
+    "user-service": {
+      "url": "http://localhost:8001",
+      "health_check": "/health"
+    },
+    "order-service": {
+      "url": "http://localhost:8002", 
+      "health_check": "/health"
+    },
+    "payment-service": {
+      "url": "http://localhost:8003",
+      "health_check": "/health"
+    }
+  },
+  "test_scenarios": [
+    {
+      "name": "user_registration_flow",
+      "steps": ["create_user", "verify_email", "login"],
+      "timeout": 30
+    },
+    {
+      "name": "order_checkout_flow",
+      "steps": ["add_to_cart", "checkout", "payment", "confirmation"],
+      "timeout": 45
+    }
+  ]
+}
