@@ -1,0 +1,56 @@
+# This is a minimal Argo CD installation for demo purposes
+# In production, use the full installation from https://argoproj.github.io/argo-cd/
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-cmd-params-cm
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: argocd-cmd-params-cm
+    app.kubernetes.io/part-of: argocd
+data:
+  server.insecure: "true"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: argocd-server
+  namespace: argocd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: argocd-server
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: argocd-server
+    spec:
+      containers:
+      - name: argocd-server
+        image: quay.io/argoproj/argocd:v2.8.4
+        ports:
+        - containerPort: 8080
+        command:
+        - argocd-server
+        args:
+        - --staticassets
+        - /shared/app
+        - --insecure
+        env:
+        - name: ARGOCD_SERVER_INSECURE
+          value: "true"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: argocd-server
+  namespace: argocd
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    targetPort: 8080
+    nodePort: 30080
+  selector:
+    app.kubernetes.io/name: argocd-server
