@@ -1,0 +1,39 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: multi-env-applications
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - env: dev
+        cluster: https://kubernetes.default.svc
+        namespace: dev
+        replicas: "1"
+      - env: staging  
+        cluster: https://kubernetes.default.svc
+        namespace: staging
+        replicas: "2"
+      - env: prod
+        cluster: https://kubernetes.default.svc
+        namespace: prod
+        replicas: "3"
+  template:
+    metadata:
+      name: 'sample-app-{{env}}'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/your-org/sample-app
+        targetRevision: main
+        path: k8s/overlays/{{env}}
+      destination:
+        server: '{{cluster}}'
+        namespace: '{{namespace}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+        - CreateNamespace=true

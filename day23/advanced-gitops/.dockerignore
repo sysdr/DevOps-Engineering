@@ -1,0 +1,10 @@
+gitops-env/
+__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+.git/
+README.md
+.gitignore
+tests/
+*.log

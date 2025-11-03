@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  gitops-dashboard:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+    volumes:
+      - ./logs:/app/logs
+    restart: unless-stopped
+    
+  prometheus:
+    image: prom/prometheus:v2.55.0
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    restart: unless-stopped
+    
+networks:
+  default:
+    name: gitops-network
