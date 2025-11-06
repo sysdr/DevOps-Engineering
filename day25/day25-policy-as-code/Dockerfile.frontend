@@ -1,0 +1,10 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Copy frontend files
+COPY frontend/ .
+
+EXPOSE 3000
+
+CMD ["python", "-m", "http.server", "3000", "--directory", "public"]

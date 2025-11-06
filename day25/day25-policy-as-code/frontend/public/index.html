@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Policy as Code Dashboard</title>
+    <link rel="stylesheet" href="styles/dashboard.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="header-left">
+                    <h1>🛡️ Policy as Code Dashboard</h1>
+                    <p class="subtitle">Real-time policy enforcement monitoring</p>
+                </div>
+                <div class="header-right">
+                    <button class="btn btn-primary" onclick="runAudit()">
+                        Run Audit Scan
+                    </button>
+                    <button class="btn btn-secondary" onclick="loadAll()">
+                        🔄 Refresh
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Metrics Cards -->
+        <div class="metrics-container">
+            <div class="metric-card compliant">
+                <div class="metric-icon">✅</div>
+                <div class="metric-content">
+                    <div class="metric-label">Compliance Rate</div>
+                    <div class="metric-value" id="compliance-rate">--</div>
+                    <div class="metric-change positive" id="compliance-change">+5.2% from last week</div>
+                </div>
+            </div>
+
+            <div class="metric-card warning">
+                <div class="metric-icon">📊</div>
+                <div class="metric-content">
+                    <div class="metric-label">Total Resources</div>
+                    <div class="metric-value" id="total-resources">--</div>
+                    <div class="metric-subtext" id="compliant-resources">-- compliant</div>
+                </div>
+            </div>
+
+            <div class="metric-card danger">
+                <div class="metric-icon">⚠️</div>
+                <div class="metric-content">
+                    <div class="metric-label">Active Violations</div>
+                    <div class="metric-value" id="total-violations">--</div>
+                    <div class="metric-subtext" id="critical-violations">-- critical</div>
+                </div>
+            </div>
+
+            <div class="metric-card info">
+                <div class="metric-icon">📋</div>
+                <div class="metric-content">
+                    <div class="metric-label">Active Policies</div>
+                    <div class="metric-value" id="active-policies">--</div>
+                    <div class="metric-subtext">Enforcing security standards</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="content-grid">
+            <!-- Violations Panel -->
+            <div class="panel violations-panel">
+                <div class="panel-header">
+                    <h2>🚨 Policy Violations</h2>
+                    <div class="filter-group">
+                        <select id="severity-filter" onchange="filterViolations()">
+                            <option value="">All Severities</option>
+                            <option value="critical">Critical</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                        </select>
+                        <select id="status-filter" onchange="filterViolations()">
+                            <option value="">All Status</option>
+                            <option value="open">Open</option>
+                            <option value="remediating">Remediating</option>
+                            <option value="resolved">Resolved</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="panel-content">
+                    <div id="violations-list" class="violations-list">
+                        <div class="loading">Loading violations...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Policies Panel -->
+            <div class="panel policies-panel">
+                <div class="panel-header">
+                    <h2>📜 Active Policies</h2>
+                </div>
+                <div class="panel-content">
+                    <div id="policies-list" class="policies-list">
+                        <div class="loading">Loading policies...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Compliance Trends -->
+        <div class="panel trends-panel">
+            <div class="panel-header">
+                <h2>📈 Compliance Trends</h2>
+                <span class="time-range">Last 7 days</span>
+            </div>
+            <div class="panel-content">
+                <canvas id="trends-chart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script src="components/dashboard.js"></script>
+</body>
+</html>

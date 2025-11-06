@@ -1,0 +1,61 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: k8srequireresourcelimits
+  annotations:
+    metadata.gatekeeper.sh/title: "Require Resource Limits"
+    metadata.gatekeeper.sh/version: "1.0.0"
+    description: "Requires containers to have CPU and memory limits set"
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sRequireResourceLimits
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            exemptImages:
+              description: "Images exempt from this policy"
+              type: array
+              items:
+                type: string
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8srequireresourcelimits
+        
+        violation[{"msg": msg}] {
+          container := input_containers[_]
+          not is_exempt(container.image)
+          not container.resources.limits.cpu
+          msg := sprintf("Container '%v' does not have CPU limits set", [container.name])
+        }
+        
+        violation[{"msg": msg}] {
+          container := input_containers[_]
+          not is_exempt(container.image)
+          not container.resources.limits.memory
+          msg := sprintf("Container '%v' does not have memory limits set", [container.name])
+        }
+        
+        input_containers[c] {
+          c := input.review.object.spec.containers[_]
+        }
+        
+        input_containers[c] {
+          c := input.review.object.spec.initContainers[_]
+        }
+        
+        input_containers[c] {
+          c := input.review.object.spec.template.spec.containers[_]
+        }
+        
+        input_containers[c] {
+          c := input.review.object.spec.template.spec.initContainers[_]
+        }
+        
+        is_exempt(image) {
+          exempt_image := input.parameters.exemptImages[_]
+          startswith(image, exempt_image)
+        }

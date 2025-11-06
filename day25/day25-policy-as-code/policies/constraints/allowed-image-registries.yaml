@@ -1,0 +1,20 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sAllowedImageRegistries
+metadata:
+  name: allowed-image-registries
+spec:
+  enforcementAction: deny
+  match:
+    kinds:
+      - apiGroups: ["apps"]
+        kinds: ["Deployment", "StatefulSet", "DaemonSet"]
+      - apiGroups: [""]
+        kinds: ["Pod"]
+  parameters:
+    registries:
+      - "docker.io/"
+      - "ghcr.io/"
+      - "gcr.io/"
+      - "quay.io/"
+      - "registry.k8s.io/"
+      - "k8s.gcr.io/"

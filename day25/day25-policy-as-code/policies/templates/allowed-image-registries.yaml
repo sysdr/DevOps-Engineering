@@ -1,0 +1,54 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: k8sallowedimageregistries
+  annotations:
+    metadata.gatekeeper.sh/title: "Allowed Image Registries"
+    metadata.gatekeeper.sh/version: "1.0.0"
+    description: "Requires container images to come from approved registries"
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sAllowedImageRegistries
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            registries:
+              description: "List of allowed image registries"
+              type: array
+              items:
+                type: string
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8sallowedimageregistries
+        
+        violation[{"msg": msg}] {
+          container := input_containers[_]
+          image := container.image
+          not starts_with_allowed_registry(image)
+          msg := sprintf("Container '%v' uses image '%v' from unapproved registry", [container.name, image])
+        }
+        
+        starts_with_allowed_registry(image) {
+          registry := input.parameters.registries[_]
+          startswith(image, registry)
+        }
+        
+        input_containers[c] {
+          c := input.review.object.spec.containers[_]
+        }
+        
+        input_containers[c] {
+          c := input.review.object.spec.initContainers[_]
+        }
+        
+        input_containers[c] {
+          c := input.review.object.spec.template.spec.containers[_]
+        }
+        
+        input_containers[c] {
+          c := input.review.object.spec.template.spec.initContainers[_]
+        }
