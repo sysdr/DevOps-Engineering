@@ -1,0 +1,39 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: storage-aws
+  labels:
+    cloud: aws
+    type: storage
+spec:
+  compositeTypeRef:
+    apiVersion: platform.example.com/v1alpha1
+    kind: Storage
+  
+  resources:
+  - name: s3-bucket
+    base:
+      apiVersion: s3.aws.upbound.io/v1beta1
+      kind: Bucket
+      spec:
+        forProvider:
+          region: us-west-2
+        writeConnectionSecretToRef:
+          namespace: crossplane-system
+    
+    patches:
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.size
+      toFieldPath: metadata.annotations["storage-size"]
+      transforms:
+      - type: map
+        map:
+          small: "100GB"
+          medium: "1TB"
+          large: "10TB"
+    
+    connectionDetails:
+    - name: bucket-name
+      fromFieldPath: metadata.name
+    - name: region
+      value: us-west-2

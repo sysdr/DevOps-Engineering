@@ -1,0 +1,77 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: database-aws
+  labels:
+    cloud: aws
+    type: database
+spec:
+  compositeTypeRef:
+    apiVersion: platform.example.com/v1alpha1
+    kind: Database
+  
+  resources:
+  - name: rds-instance
+    base:
+      apiVersion: rds.aws.upbound.io/v1beta1
+      kind: Instance
+      spec:
+        forProvider:
+          region: us-west-2
+          engine: postgres
+          engineVersion: "15.3"
+          instanceClass: db.t3.micro
+          allocatedStorage: 20
+          username: dbadmin
+          passwordSecretRef:
+            namespace: crossplane-system
+            name: rds-password
+            key: password
+          skipFinalSnapshot: true
+          publiclyAccessible: false
+        writeConnectionSecretToRef:
+          namespace: crossplane-system
+    
+    patches:
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.size
+      toFieldPath: spec.forProvider.instanceClass
+      transforms:
+      - type: map
+        map:
+          small: db.t3.micro
+          medium: db.m5.large
+          large: db.m5.2xlarge
+    
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.size
+      toFieldPath: spec.forProvider.allocatedStorage
+      transforms:
+      - type: map
+        map:
+          small: 20
+          medium: 100
+          large: 500
+    
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.backupEnabled
+      toFieldPath: spec.forProvider.backupRetentionPeriod
+      transforms:
+      - type: map
+        map:
+          true: 7
+          false: 0
+    
+    - type: ToCompositeFieldPath
+      fromFieldPath: status.atProvider.endpoint
+      toFieldPath: status.endpoint
+    
+    connectionDetails:
+    - name: host
+      fromConnectionSecretKey: endpoint
+    - name: port
+      fromConnectionSecretKey: port
+    - name: username
+      fromConnectionSecretKey: username
+    - name: password
+      fromConnectionSecretKey: password

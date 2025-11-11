@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crossplane Infrastructure Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: white;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .header p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1em;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 28px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .stat-value {
+            font-size: 2.8em;
+            font-weight: 700;
+            color: #1e40af;
+            margin-bottom: 8px;
+            line-height: 1;
+        }
+        
+        .stat-label {
+            color: #6b7280;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+        
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+        }
+        
+        .provision-panel {
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+            height: fit-content;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .provision-panel h2 {
+            color: #1e40af;
+            margin-bottom: 28px;
+            font-size: 1.75em;
+            font-weight: 700;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.2s;
+            background: #f9fafb;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            cursor: pointer;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px 24px;
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.05em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .btn:hover {
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transform: translateY(-1px);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .resources-panel {
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e5e7eb;
+        }
+        
+        .resources-panel h2 {
+            color: #1e40af;
+            margin-bottom: 28px;
+            font-size: 1.75em;
+            font-weight: 700;
+        }
+        
+        .resource-card {
+            background: #f9fafb;
+            padding: 24px;
+            border-radius: 10px;
+            margin-bottom: 16px;
+            border-left: 4px solid #3b82f6;
+            transition: all 0.3s;
+            border: 1px solid #e5e7eb;
+            border-left-width: 4px;
+        }
+        
+        .resource-card:hover {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+            transform: translateX(4px);
+            background: white;
+        }
+        
+        .resource-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .resource-name {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .status-badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-ready {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        
+        .status-provisioning {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
+        }
+        
+        .status-failed {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+        
+        .resource-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .detail-item {
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .delete-btn {
+            padding: 8px 18px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 500;
+            transition: all 0.2s;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .delete-btn:hover {
+            background: #dc2626;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .refresh-btn {
+            padding: 10px 24px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            font-weight: 600;
+            transition: all 0.2s;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .refresh-btn:hover {
+            background: #059669;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .providers-section {
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+            margin-top: 30px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .providers-section h2 {
+            color: #1e40af;
+            margin-bottom: 24px;
+            font-size: 1.75em;
+            font-weight: 700;
+        }
+        
+        .provider-card {
+            background: #f9fafb;
+            padding: 18px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #e5e7eb;
+            transition: all 0.2s;
+        }
+        
+        .provider-card:hover {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .provider-info {
+            flex: 1;
+        }
+        
+        .provider-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .provider-package {
+            font-size: 0.85em;
+            color: #666;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 48px;
+            color: #6b7280;
+        }
+        
+        .empty-state-icon {
+            font-size: 3.5em;
+            margin-bottom: 16px;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Crossplane Infrastructure Dashboard</h1>
+            <p>Provision and manage cloud infrastructure through GitOps</p>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="totalResources">0</div>
+                <div class="stat-label">Total Resources</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="readyResources">0</div>
+                <div class="stat-label">Ready</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="provisioningResources">0</div>
+                <div class="stat-label">Provisioning</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="providersCount">0</div>
+                <div class="stat-label">Active Providers</div>
+            </div>
+        </div>
+        
+        <div class="main-grid">
+            <div class="provision-panel">
+                <h2>Provision Infrastructure</h2>
+                <form id="provisionForm">
+                    <div class="form-group">
+                        <label for="resourceName">Resource Name</label>
+                        <input type="text" id="resourceName" required placeholder="my-database">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="resourceType">Type</label>
+                        <select id="resourceType" required>
+                            <option value="database">Database (PostgreSQL)</option>
+                            <option value="storage">Storage (S3/GCS)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="cloudProvider">Cloud Provider</label>
+                        <select id="cloudProvider" required>
+                            <option value="aws">AWS</option>
+                            <option value="gcp">Google Cloud</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="resourceSize">Size</label>
+                        <select id="resourceSize" required>
+                            <option value="small">Small (Dev/Test)</option>
+                            <option value="medium">Medium (Staging)</option>
+                            <option value="large">Large (Production)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="namespace">Namespace</label>
+                        <input type="text" id="namespace" value="default" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="backupEnabled" checked>
+                            <label for="backupEnabled">Enable Automated Backups</label>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn">Provision Infrastructure</button>
+                </form>
+            </div>
+            
+            <div class="resources-panel">
+                <button class="refresh-btn" onclick="loadResources()">🔄 Refresh</button>
+                <h2>Active Resources</h2>
+                <div id="resourcesList"></div>
+            </div>
+        </div>
+        
+        <div class="providers-section">
+            <h2>Crossplane Providers</h2>
+            <div id="providersList"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Dynamically determine API URL based on current host
+        const API_URL = window.location.protocol + '//' + window.location.hostname + ':8000';
+        
+        // Load resources on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadResources();
+            loadProviders();
+            setInterval(() => {
+                loadResources();
+                loadProviders();
+            }, 10000);
+        });
+        
+        // Handle form submission
+        document.getElementById('provisionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const data = {
+                name: document.getElementById('resourceName').value,
+                type: document.getElementById('resourceType').value,
+                cloud: document.getElementById('cloudProvider').value,
+                size: document.getElementById('resourceSize').value,
+                namespace: document.getElementById('namespace').value,
+                backup_enabled: document.getElementById('backupEnabled').checked
+            };
+            
+            try {
+                const response = await fetch(`${API_URL}/infrastructure/provision`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    alert('Infrastructure provisioning started!');
+                    document.getElementById('provisionForm').reset();
+                    setTimeout(loadResources, 2000);
+                } else {
+                    const error = await response.json();
+                    alert(`Error: ${error.detail}`);
+                }
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            }
+        });
+        
+        async function loadResources() {
+            try {
+                const response = await fetch(`${API_URL}/infrastructure/list/default`);
+                const data = await response.json();
+                
+                const resourcesList = document.getElementById('resourcesList');
+                
+                if (data.resources.length === 0) {
+                    resourcesList.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📦</div>
+                            <p>No infrastructure resources yet. Provision one to get started!</p>
+                        </div>
+                    `;
+                } else {
+                    resourcesList.innerHTML = data.resources.map(resource => `
+                        <div class="resource-card">
+                            <div class="resource-header">
+                                <div class="resource-name">${resource.name}</div>
+                                <span class="status-badge status-${resource.ready ? 'ready' : 'provisioning'}">
+                                    ${resource.ready ? 'Ready' : 'Provisioning'}
+                                </span>
+                            </div>
+                            <div class="resource-details">
+                                <div class="detail-item">
+                                    <span class="detail-label">Type:</span> ${resource.type}
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Cloud:</span> ${resource.cloud.toUpperCase()}
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Status:</span> ${resource.status}
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Created:</span> ${new Date(resource.created_at).toLocaleString()}
+                                </div>
+                            </div>
+                            <button class="delete-btn" onclick="deleteResource('${resource.name}')">Delete</button>
+                        </div>
+                    `).join('');
+                }
+                
+                // Update stats
+                document.getElementById('totalResources').textContent = data.count;
+                document.getElementById('readyResources').textContent = 
+                    data.resources.filter(r => r.ready).length;
+                document.getElementById('provisioningResources').textContent = 
+                    data.resources.filter(r => !r.ready).length;
+                    
+            } catch (error) {
+                console.error('Failed to load resources:', error);
+            }
+        }
+        
+        async function loadProviders() {
+            try {
+                const response = await fetch(`${API_URL}/providers/status`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                
+                // Handle error responses
+                if (data.detail) {
+                    console.error('API error:', data.detail);
+                    document.getElementById('providersCount').textContent = '0';
+                    document.getElementById('providersList').innerHTML = '<p class="empty-state">Error loading providers</p>';
+                    return;
+                }
+                
+                // Ensure providers array exists
+                const providers = data.providers || [];
+                document.getElementById('providersCount').textContent = data.count || providers.length || 0;
+                
+                const providersList = document.getElementById('providersList');
+                
+                if (providers.length === 0) {
+                    providersList.innerHTML = '<p class="empty-state">No providers installed</p>';
+                } else {
+                    providersList.innerHTML = providers.map(provider => `
+                        <div class="provider-card">
+                            <div class="provider-info">
+                                <div class="provider-name">${provider.name || 'Unknown'}</div>
+                                <div class="provider-package">${provider.package || ''}</div>
+                            </div>
+                            <span class="status-badge ${provider.healthy && provider.installed ? 'status-ready' : 'status-provisioning'}">
+                                ${provider.healthy && provider.installed ? 'Healthy' : 'Installing'}
+                            </span>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Failed to load providers:', error);
+                document.getElementById('providersCount').textContent = '0';
+                document.getElementById('providersList').innerHTML = '<p class="empty-state">Error loading providers</p>';
+            }
+        }
+        
+        async function deleteResource(name) {
+            if (!confirm(`Are you sure you want to delete ${name}?`)) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/infrastructure/default/${name}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    alert('Resource deletion started');
+                    setTimeout(loadResources, 2000);
+                } else {
+                    alert('Failed to delete resource');
+                }
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            }
+        }
+    </script>
+</body>
+</html>

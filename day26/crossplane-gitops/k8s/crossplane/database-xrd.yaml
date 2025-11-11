@@ -1,0 +1,38 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: databases.platform.example.com
+spec:
+  group: platform.example.com
+  names:
+    kind: Database
+    plural: databases
+  claimNames:
+    kind: DatabaseClaim
+    plural: databaseclaims
+  versions:
+  - name: v1alpha1
+    served: true
+    referenceable: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              cloud:
+                type: string
+                enum: [aws, gcp]
+                description: Cloud provider
+              size:
+                type: string
+                enum: [small, medium, large]
+                description: Database size
+              backupEnabled:
+                type: boolean
+                default: true
+                description: Enable automated backups
+            required:
+            - cloud
+            - size

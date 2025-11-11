@@ -1,0 +1,39 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: storage-gcp
+  labels:
+    cloud: gcp
+    type: storage
+spec:
+  compositeTypeRef:
+    apiVersion: platform.example.com/v1alpha1
+    kind: Storage
+  
+  resources:
+  - name: gcs-bucket
+    base:
+      apiVersion: storage.gcp.upbound.io/v1beta1
+      kind: Bucket
+      spec:
+        forProvider:
+          location: US
+        writeConnectionSecretToRef:
+          namespace: crossplane-system
+    
+    patches:
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.size
+      toFieldPath: metadata.annotations["storage-size"]
+      transforms:
+      - type: map
+        map:
+          small: "100GB"
+          medium: "1TB"
+          large: "10TB"
+    
+    connectionDetails:
+    - name: bucket-name
+      fromFieldPath: metadata.name
+    - name: location
+      value: US
