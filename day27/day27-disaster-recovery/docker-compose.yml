@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  frontend:
+    image: python:3.11-slim
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+    ports:
+      - "3000:3000"
+    command: python -m http.server 3000
+    depends_on:
+      - backend

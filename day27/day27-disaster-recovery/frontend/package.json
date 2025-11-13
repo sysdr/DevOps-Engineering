@@ -1,0 +1,13 @@
+{
+  "name": "dr-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "scripts": {
+    "start": "python3 -m http.server 3000 --directory .",
+    "build": "echo 'Build complete'"
+  }
+}

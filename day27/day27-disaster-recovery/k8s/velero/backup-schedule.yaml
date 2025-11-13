@@ -1,0 +1,13 @@
+# Velero backup schedule example (requires Velero installed)
+apiVersion: velero.io/v1
+kind: Schedule
+metadata:
+  name: daily-backup
+  namespace: velero
+spec:
+  schedule: "0 2 * * *"  # Daily at 2 AM
+  template:
+    includedNamespaces:
+    - production
+    - default
+    ttl: 720h  # 30 days
