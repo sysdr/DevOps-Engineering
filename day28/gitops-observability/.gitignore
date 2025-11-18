@@ -1,0 +1,17 @@
+node_modules/
+frontend/node_modules/
+backend/venv/
+venv/
+.pytest_cache/
+backend/.pytest_cache/
+*.pyc
+__pycache__/
+backend.log
+frontend.log
+backend.pid
+frontend.pid
+*.swp
+*.log
+dist/
+build/
+
