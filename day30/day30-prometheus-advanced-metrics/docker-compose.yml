@@ -1,0 +1,220 @@
+version: '3.8'
+
+services:
+  # High Availability Prometheus - Replica 0
+  prometheus-0:
+    image: prom/prometheus:v2.54.1
+    container_name: prometheus-0
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=24h'
+      - '--storage.tsdb.min-block-duration=2h'
+      - '--storage.tsdb.max-block-duration=2h'
+      - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
+    volumes:
+      - ./prometheus/prometheus-0/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./rules:/etc/prometheus/rules:ro
+      - prometheus-0-data:/prometheus
+    ports:
+      - "9090:9090"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - monitoring
+    restart: unless-stopped
+
+  # High Availability Prometheus - Replica 1
+  prometheus-1:
+    image: prom/prometheus:v2.54.1
+    container_name: prometheus-1
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=24h'
+      - '--storage.tsdb.min-block-duration=2h'
+      - '--storage.tsdb.max-block-duration=2h'
+      - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
+    volumes:
+      - ./prometheus/prometheus-1/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./rules:/etc/prometheus/rules:ro
+      - prometheus-1-data:/prometheus
+    ports:
+      - "9091:9090"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - monitoring
+    restart: unless-stopped
+
+  # Thanos Sidecar for Prometheus 0
+  thanos-sidecar-0:
+    image: quay.io/thanos/thanos:v0.36.1
+    container_name: thanos-sidecar-0
+    command:
+      - 'sidecar'
+      - '--tsdb.path=/prometheus'
+      - '--prometheus.url=http://prometheus-0:9090'
+      - '--objstore.config-file=/etc/thanos/bucket.yml'
+      - '--grpc-address=0.0.0.0:10901'
+      - '--http-address=0.0.0.0:10902'
+    volumes:
+      - prometheus-0-data:/prometheus:ro
+      - ./thanos/bucket.yml:/etc/thanos/bucket.yml:ro
+    depends_on:
+      - prometheus-0
+      - minio
+    networks:
+      - monitoring
+    restart: unless-stopped
+
+  # Thanos Sidecar for Prometheus 1
+  thanos-sidecar-1:
+    image: quay.io/thanos/thanos:v0.36.1
+    container_name: thanos-sidecar-1
+    command:
+      - 'sidecar'
+      - '--tsdb.path=/prometheus'
+      - '--prometheus.url=http://prometheus-1:9090'
+      - '--objstore.config-file=/etc/thanos/bucket.yml'
+      - '--grpc-address=0.0.0.0:10901'
+      - '--http-address=0.0.0.0:10902'
+    volumes:
+      - prometheus-1-data:/prometheus:ro
+      - ./thanos/bucket.yml:/etc/thanos/bucket.yml:ro
+    depends_on:
+      - prometheus-1
+      - minio
+    networks:
+      - monitoring
+    restart: unless-stopped
+
+  # Thanos Query - Unified query interface
+  thanos-query:
+    image: quay.io/thanos/thanos:v0.36.1
+    container_name: thanos-query
+    command:
+      - 'query'
+      - '--http-address=0.0.0.0:10904'
+      - '--grpc-address=0.0.0.0:10903'
+      - '--store=thanos-sidecar-0:10901'
+      - '--store=thanos-sidecar-1:10901'
+      - '--store=thanos-store:10901'
+      - '--query.replica-label=replica'
+    ports:
+      - "10904:10904"
+    depends_on:
+      - thanos-sidecar-0
+      - thanos-sidecar-1
+    networks:
+      - monitoring
+    restart: unless-stopped
+
+  # Thanos Store Gateway - Serves historical data from object storage
+  thanos-store:
+    image: quay.io/thanos/thanos:v0.36.1
+    container_name: thanos-store
+    user: "0:0"
+    command:
+      - 'store'
+      - '--data-dir=/var/thanos/store'
+      - '--objstore.config-file=/etc/thanos/bucket.yml'
+      - '--grpc-address=0.0.0.0:10901'
+      - '--http-address=0.0.0.0:10902'
+    volumes:
+      - ./thanos/bucket.yml:/etc/thanos/bucket.yml:ro
+      - thanos-store-data:/var/thanos/store
+    depends_on:
+      - minio
+    networks:
+      - monitoring
+    restart: unless-stopped
+
+  # Thanos Compactor - Downsamples and compacts blocks
+  thanos-compactor:
+    image: quay.io/thanos/thanos:v0.36.1
+    container_name: thanos-compactor
+    user: "0:0"
+    command:
+      - 'compact'
+      - '--data-dir=/var/thanos/compact'
+      - '--objstore.config-file=/etc/thanos/bucket.yml'
+      - '--http-address=0.0.0.0:10902'
+      - '--wait'
+    volumes:
+      - ./thanos/bucket.yml:/etc/thanos/bucket.yml:ro
+      - thanos-compact-data:/var/thanos/compact
+    depends_on:
+      - minio
+    networks:
+      - monitoring
+    restart: unless-stopped
+
+  # Alertmanager
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    container_name: alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+      - '--web.external-url=http://localhost:9093'
+    volumes:
+      - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager-data:/alertmanager
+    ports:
+      - "9093:9093"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - monitoring
+    restart: unless-stopped
+
+  # MinIO - Object storage for Thanos
+  minio:
+    image: minio/minio:RELEASE.2024-10-02T17-50-41Z
+    container_name: minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+      MINIO_PROMETHEUS_AUTH_TYPE: public
+    volumes:
+      - minio-data:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    networks:
+      - monitoring
+    restart: unless-stopped
+
+  # MinIO bucket initialization
+  minio-init:
+    image: minio/mc:RELEASE.2024-10-02T08-27-28Z
+    container_name: minio-init
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      sleep 5;
+      mc alias set myminio http://minio:9000 minioadmin minioadmin;
+      mc mb myminio/thanos --ignore-existing;
+      mc anonymous set public myminio/thanos;
+      echo 'Bucket created successfully';
+      exit 0;
+      "
+    networks:
+      - monitoring
+
+networks:
+  monitoring:
+    driver: bridge
+
+volumes:
+  prometheus-0-data:
+  prometheus-1-data:
+  thanos-store-data:
+  thanos-compact-data:
+  alertmanager-data:
+  minio-data:
