@@ -1,0 +1,14 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY backend/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY backend/dashboard_api.py .
+COPY backend/grafana_api.py .
+COPY grafana /app/grafana
+
+EXPOSE 8001
+
+CMD ["python", "dashboard_api.py"]

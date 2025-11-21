@@ -1,0 +1,208 @@
+{
+  "dashboard": {
+    "title": "Business Metrics Overview",
+    "tags": ["business", "metrics", "production"],
+    "timezone": "browser",
+    "schemaVersion": 38,
+    "version": 1,
+    "refresh": "5s",
+    "time": {
+      "from": "now-15m",
+      "to": "now"
+    },
+    "templating": {
+      "list": [
+        {
+          "name": "tier",
+          "type": "custom",
+          "options": [
+            {"text": "All", "value": "$__all"},
+            {"text": "Free", "value": "free"},
+            {"text": "Premium", "value": "premium"},
+            {"text": "Enterprise", "value": "enterprise"}
+          ],
+          "current": {"text": "All", "value": "$__all"},
+          "multi": true,
+          "includeAll": true
+        },
+        {
+          "name": "payment_gateway",
+          "type": "custom",
+          "options": [
+            {"text": "Stripe", "value": "stripe"},
+            {"text": "PayPal", "value": "paypal"},
+            {"text": "Square", "value": "square"}
+          ],
+          "current": {"text": "Stripe", "value": "stripe"},
+          "multi": false
+        }
+      ]
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Active Users by Tier",
+        "type": "timeseries",
+        "gridPos": {"x": 0, "y": 0, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "business_active_users{tier=~\"$tier\"}",
+            "legendFormat": "{{tier}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "custom": {
+              "lineWidth": 2,
+              "fillOpacity": 10
+            },
+            "unit": "short"
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "Total Active Users",
+        "type": "stat",
+        "gridPos": {"x": 12, "y": 0, "w": 6, "h": 4},
+        "targets": [
+          {
+            "expr": "sum(business_active_users)"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 1000, "color": "yellow"},
+                {"value": 1500, "color": "green"}
+              ]
+            },
+            "unit": "short"
+          }
+        },
+        "options": {
+          "graphMode": "area",
+          "colorMode": "value"
+        }
+      },
+      {
+        "id": 3,
+        "title": "Payment Success Rate",
+        "type": "gauge",
+        "gridPos": {"x": 18, "y": 0, "w": 6, "h": 4},
+        "targets": [
+          {
+            "expr": "business_payment_success_rate{gateway=\"$payment_gateway\"}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 95, "color": "yellow"},
+                {"value": 98, "color": "green"}
+              ]
+            },
+            "unit": "percent"
+          }
+        }
+      },
+      {
+        "id": 4,
+        "title": "User Registrations Rate",
+        "type": "timeseries",
+        "gridPos": {"x": 12, "y": 4, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "rate(business_user_registrations_total[5m])",
+            "legendFormat": "{{source}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "unit": "reqps"
+          }
+        }
+      },
+      {
+        "id": 5,
+        "title": "Order Processing Time (P95)",
+        "type": "timeseries",
+        "gridPos": {"x": 0, "y": 8, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(business_order_processing_seconds_bucket[5m]))",
+            "legendFormat": "{{payment_method}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "unit": "s"
+          }
+        }
+      },
+      {
+        "id": 6,
+        "title": "API Request Rate by Endpoint",
+        "type": "timeseries",
+        "gridPos": {"x": 12, "y": 12, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "sum by (endpoint) (rate(api_requests_total[5m]))",
+            "legendFormat": "{{endpoint}}"
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "API Error Rate",
+        "type": "stat",
+        "gridPos": {"x": 0, "y": 16, "w": 6, "h": 4},
+        "targets": [
+          {
+            "expr": "sum(rate(api_requests_total{status=~\"5..\"}[5m])) / sum(rate(api_requests_total[5m])) * 100"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 1, "color": "yellow"},
+                {"value": 5, "color": "red"}
+              ]
+            },
+            "unit": "percent"
+          }
+        }
+      },
+      {
+        "id": 8,
+        "title": "Response Time Heatmap",
+        "type": "heatmap",
+        "gridPos": {"x": 6, "y": 16, "w": 18, "h": 8},
+        "targets": [
+          {
+            "expr": "sum by (le) (rate(api_response_time_seconds_bucket[5m]))",
+            "format": "heatmap"
+          }
+        ],
+        "options": {
+          "calculate": false,
+          "yAxis": {"unit": "s"}
+        }
+      }
+    ]
+  }
+}
