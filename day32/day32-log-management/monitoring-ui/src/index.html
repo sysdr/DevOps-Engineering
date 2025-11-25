@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log Monitoring Dashboard</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cg fill='none' stroke='%23667eea' stroke-width='4'%3E%3Ccircle cx='32' cy='32' r='28'/%3E%3Cpath d='M16 36l8-12 8 6 8-10 8 12'/%3E%3Ccircle cx='16' cy='36' r='4' fill='%23f56565' stroke='none'/%3E%3Ccircle cx='32' cy='30' r='4' fill='%23ed8936' stroke='none'/%3E%3Ccircle cx='48' cy='38' r='4' fill='%2338a169' stroke='none'/%3E%3C/g%3E%3C/svg%3E">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: #2d3748;
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #718096;
+            font-size: 14px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .metric-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .metric-label {
+            color: #718096;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        .metric-value {
+            color: #2d3748;
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .metric-change {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .metric-change.up {
+            color: #e53e3e;
+        }
+
+        .metric-change.down {
+            color: #38a169;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 24px;
+        }
+
+        .chart-title {
+            color: #2d3748;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .chart {
+            height: 300px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            padding: 20px 0;
+            border-left: 2px solid #e2e8f0;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .bar {
+            flex: 1;
+            margin: 0 4px;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            border-radius: 4px 4px 0 0;
+            transition: all 0.3s;
+            min-height: 10px;
+            position: relative;
+        }
+
+        .bar:hover {
+            opacity: 0.8;
+        }
+
+        .bar-label {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: #718096;
+            white-space: nowrap;
+        }
+
+        .anomaly-alert {
+            background: linear-gradient(135deg, #fc8181 0%, #f56565 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+
+        .anomaly-alert.active {
+            display: block;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .anomaly-alert h3 {
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+
+        .logs-container {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .log-entry {
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        .log-error {
+            background: #fff5f5;
+            color: #c53030;
+        }
+
+        .log-warning {
+            background: #fffaf0;
+            color: #c05621;
+        }
+
+        .log-info {
+            background: #f7fafc;
+            color: #2d3748;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-healthy {
+            background: #38a169;
+            box-shadow: 0 0 0 3px rgba(56, 161, 105, 0.2);
+        }
+
+        .status-warning {
+            background: #ed8936;
+            box-shadow: 0 0 0 3px rgba(237, 137, 54, 0.2);
+        }
+
+        .status-critical {
+            background: #e53e3e;
+            box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Log Monitoring Dashboard</h1>
+            <p>Real-time observability for distributed services</p>
+        </div>
+
+        <div id="anomalyAlert" class="anomaly-alert">
+            <h3>⚠️ Anomaly Detected!</h3>
+            <p id="anomalyMessage">Error rate exceeds baseline threshold</p>
+        </div>
+
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-label">Total Logs</div>
+                <div class="metric-value" id="totalLogs">0</div>
+                <div class="metric-change" id="totalChange">—</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Error Rate</div>
+                <div class="metric-value" id="errorRate">0%</div>
+                <div class="metric-change up" id="errorChange">—</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">
+                    <span class="status-indicator" id="userServiceStatus"></span>
+                    User Service
+                </div>
+                <div class="metric-value" id="userServiceLogs">0</div>
+                <div class="metric-change" id="userServiceChange">—</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">
+                    <span class="status-indicator" id="orderServiceStatus"></span>
+                    Order Service
+                </div>
+                <div class="metric-value" id="orderServiceLogs">0</div>
+                <div class="metric-change" id="orderServiceChange">—</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">
+                    <span class="status-indicator" id="paymentServiceStatus"></span>
+                    Payment Service
+                </div>
+                <div class="metric-value" id="paymentServiceLogs">0</div>
+                <div class="metric-change" id="paymentServiceChange">—</div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-title">Error Rate Over Time (Last 10 Minutes)</div>
+            <div class="chart" id="errorChart"></div>
+        </div>
+
+        <div class="logs-container">
+            <div class="chart-title">Recent Log Events</div>
+            <div id="logsList"></div>
+        </div>
+    </div>
+
+    <script>
+        // Simulated metrics data
+        let metrics = {
+            totalLogs: 0,
+            errorLogs: 0,
+            userService: 0,
+            orderService: 0,
+            paymentService: 0,
+            errorRateHistory: []
+        };
+
+        function updateMetrics() {
+            // Simulate incoming logs
+            const newLogs = Math.floor(Math.random() * 20) + 10;
+            const newErrors = Math.random() < 0.1 ? Math.floor(Math.random() * 5) : 0;
+            
+            metrics.totalLogs += newLogs;
+            metrics.errorLogs += newErrors;
+            metrics.userService += Math.floor(newLogs * 0.4);
+            metrics.orderService += Math.floor(newLogs * 0.35);
+            metrics.paymentService += Math.floor(newLogs * 0.25);
+            
+            const errorRate = (metrics.errorLogs / metrics.totalLogs * 100).toFixed(2);
+            metrics.errorRateHistory.push(parseFloat(errorRate));
+            
+            if (metrics.errorRateHistory.length > 10) {
+                metrics.errorRateHistory.shift();
+            }
+            
+            // Update UI
+            document.getElementById('totalLogs').textContent = metrics.totalLogs.toLocaleString();
+            document.getElementById('errorRate').textContent = errorRate + '%';
+            document.getElementById('userServiceLogs').textContent = metrics.userService.toLocaleString();
+            document.getElementById('orderServiceLogs').textContent = metrics.orderService.toLocaleString();
+            document.getElementById('paymentServiceLogs').textContent = metrics.paymentService.toLocaleString();
+            
+            // Update status indicators
+            updateStatusIndicator('userServiceStatus', errorRate);
+            updateStatusIndicator('orderServiceStatus', errorRate);
+            updateStatusIndicator('paymentServiceStatus', errorRate);
+            
+            // Check for anomalies
+            if (parseFloat(errorRate) > 5) {
+                document.getElementById('anomalyAlert').classList.add('active');
+                document.getElementById('anomalyMessage').textContent = 
+                    `Error rate at ${errorRate}% - exceeds 5% threshold!`;
+            } else {
+                document.getElementById('anomalyAlert').classList.remove('active');
+            }
+            
+            // Update chart
+            updateChart();
+            
+            // Add simulated log entries
+            if (Math.random() < 0.3) {
+                addLogEntry();
+            }
+        }
+
+        function updateStatusIndicator(elementId, errorRate) {
+            const indicator = document.getElementById(elementId);
+            indicator.className = 'status-indicator';
+            
+            if (parseFloat(errorRate) < 2) {
+                indicator.classList.add('status-healthy');
+            } else if (parseFloat(errorRate) < 5) {
+                indicator.classList.add('status-warning');
+            } else {
+                indicator.classList.add('status-critical');
+            }
+        }
+
+        function updateChart() {
+            const chart = document.getElementById('errorChart');
+            chart.innerHTML = '';
+            
+            const maxRate = Math.max(...metrics.errorRateHistory, 10);
+            
+            metrics.errorRateHistory.forEach((rate, index) => {
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                const height = (rate / maxRate) * 100;
+                bar.style.height = height + '%';
+                
+                const label = document.createElement('span');
+                label.className = 'bar-label';
+                label.textContent = `-${10 - index}m`;
+                bar.appendChild(label);
+                
+                chart.appendChild(bar);
+            });
+        }
+
+        function addLogEntry() {
+            const logsList = document.getElementById('logsList');
+            const logTypes = [
+                { level: 'info', class: 'log-info', message: 'User authentication successful' },
+                { level: 'info', class: 'log-info', message: 'Order created successfully' },
+                { level: 'warning', class: 'log-warning', message: 'Payment declined - insufficient funds' },
+                { level: 'error', class: 'log-error', message: 'Database connection timeout' },
+                { level: 'info', class: 'log-info', message: 'Payment processed successfully' }
+            ];
+            
+            const log = logTypes[Math.floor(Math.random() * logTypes.length)];
+            const timestamp = new Date().toISOString();
+            
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${log.class}`;
+            entry.textContent = `[${timestamp}] [${log.level.toUpperCase()}] ${log.message}`;
+            
+            logsList.insertBefore(entry, logsList.firstChild);
+            
+            // Keep only last 20 logs
+            while (logsList.children.length > 20) {
+                logsList.removeChild(logsList.lastChild);
+            }
+        }
+
+        // Update metrics every 3 seconds
+        setInterval(updateMetrics, 3000);
+        
+        // Initial update
+        updateMetrics();
+    </script>
+</body>
+</html>

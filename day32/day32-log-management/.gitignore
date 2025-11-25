@@ -1,0 +1,12 @@
+venv/
+node_modules/
+monitoring-ui/node_modules/
+.pytest_cache/
+logs/
+*.pyc
+__pycache__/
+.user_service.pid
+.order_service.pid
+.payment_service.pid
+*.log
+
