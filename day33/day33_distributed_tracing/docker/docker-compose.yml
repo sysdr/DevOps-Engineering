@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  jaeger:
+    image: jaegertracing/all-in-one:1.51
+    ports:
+      - "5775:5775/udp"
+      - "6831:6831/udp"
+      - "6832:6832/udp"
+      - "5778:5778"
+      - "16686:16686"
+      - "14268:14268"
+      - "14269:14269"
+      - "9411:9411"
+    environment:
+      - COLLECTOR_ZIPKIN_HOST_PORT=:9411
+    networks:
+      - tracing-network
+
+  order-service:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.order
+    ports:
+      - "8001:8001"
+    depends_on:
+      - jaeger
+    environment:
+      - JAEGER_AGENT_HOST=jaeger
+      - JAEGER_AGENT_PORT=6831
+    networks:
+      - tracing-network
+
+  inventory-service:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.inventory
+    ports:
+      - "8002:8002"
+    depends_on:
+      - jaeger
+    environment:
+      - JAEGER_AGENT_HOST=jaeger
+      - JAEGER_AGENT_PORT=6831
+    networks:
+      - tracing-network
+
+  payment-service:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.payment
+    ports:
+      - "8003:8003"
+    depends_on:
+      - jaeger
+    environment:
+      - JAEGER_AGENT_HOST=jaeger
+      - JAEGER_AGENT_PORT=6831
+    networks:
+      - tracing-network
+
+networks:
+  tracing-network:
+    driver: bridge
