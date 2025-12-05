@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+
+  order:
+    build:
+      context: ./services
+      dockerfile: order/Dockerfile
+    ports:
+      - "8001:8001"
+    environment:
+      - REDIS_HOST=redis
+    depends_on:
+      - redis
+
+  payment:
+    build:
+      context: ./services
+      dockerfile: payment/Dockerfile
+    ports:
+      - "8002:8002"
+    environment:
+      - REDIS_HOST=redis
+    depends_on:
+      - redis
+
+  inventory:
+    build:
+      context: ./services
+      dockerfile: inventory/Dockerfile
+    ports:
+      - "8003:8003"
+    environment:
+      - REDIS_HOST=redis
+    depends_on:
+      - redis
+
+  notification:
+    build:
+      context: ./services
+      dockerfile: notification/Dockerfile
+    ports:
+      - "8004:8004"
+    environment:
+      - REDIS_HOST=redis
+    depends_on:
+      - redis
+
+  slo-calculator:
+    build:
+      context: ./services
+      dockerfile: slo-calculator/Dockerfile
+    ports:
+      - "8005:8005"
+    environment:
+      - REDIS_HOST=redis
+      - PROMETHEUS_URL=http://prometheus:9090
+    depends_on:
+      - redis
+      - prometheus
+
+  policy-engine:
+    build:
+      context: ./services
+      dockerfile: policy-engine/Dockerfile
+    ports:
+      - "8006:8006"
+    environment:
+      - REDIS_HOST=redis
+    depends_on:
+      - redis
+      - slo-calculator
