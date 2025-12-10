@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  auth-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.auth
+    ports:
+      - "8001:8001"
+    networks:
+      - zero-trust
+
+  policy-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.policy
+    ports:
+      - "8003:8003"
+    networks:
+      - zero-trust
+
+  resource-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.resource
+    ports:
+      - "8002:8002"
+    depends_on:
+      - auth-service
+      - policy-service
+    networks:
+      - zero-trust
+
+  cert-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.certs
+    ports:
+      - "8004:8004"
+    networks:
+      - zero-trust
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - auth-service
+      - policy-service
+      - resource-service
+      - cert-service
+    networks:
+      - zero-trust
+
+networks:
+  zero-trust:
+    driver: bridge
