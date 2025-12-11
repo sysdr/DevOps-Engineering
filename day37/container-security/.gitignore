@@ -1,0 +1,28 @@
+# Node
+node_modules/
+npm-debug.log*
+
+# Python
+venv/
+ENV/
+.env
+__pycache__/
+.pytest_cache/
+*.py[cod]
+
+# Databases and state
+*.db
+*.sqlite3
+*.pid
+
+# Build artifacts
+dist/
+build/
+
+# IDE/editor
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+

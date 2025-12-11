@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  scanner:
+    build: ./scanner
+    ports:
+      - "8001:8001"
+    volumes:
+      - scanner-data:/app
+    restart: unless-stopped
+
+  runtime-monitor:
+    build: ./runtime-monitor
+    ports:
+      - "8002:8002"
+    volumes:
+      - monitor-data:/app
+    restart: unless-stopped
+
+  admission-controller:
+    build: ./admission-controller
+    ports:
+      - "8003:8003"
+    volumes:
+      - admission-data:/app
+    restart: unless-stopped
+
+  benchmark:
+    build: ./benchmark
+    ports:
+      - "8004:8004"
+    volumes:
+      - benchmark-data:/app
+    restart: unless-stopped
+
+  dashboard:
+    build: ./dashboard
+    ports:
+      - "3000:80"
+    depends_on:
+      - scanner
+      - runtime-monitor
+      - admission-controller
+      - benchmark
+    restart: unless-stopped
+
+volumes:
+  scanner-data:
+  monitor-data:
+  admission-data:
+  benchmark-data:
