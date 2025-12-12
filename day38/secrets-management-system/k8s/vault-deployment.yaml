@@ -1,0 +1,63 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: vault-system
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: vault
+  namespace: vault-system
+spec:
+  serviceName: vault
+  replicas: 3
+  selector:
+    matchLabels:
+      app: vault
+  template:
+    metadata:
+      labels:
+        app: vault
+    spec:
+      containers:
+      - name: vault
+        image: hashicorp/vault:1.15.0
+        ports:
+        - containerPort: 8200
+          name: http
+        - containerPort: 8201
+          name: cluster
+        env:
+        - name: VAULT_ADDR
+          value: "http://127.0.0.1:8200"
+        - name: VAULT_API_ADDR
+          value: "http://$(POD_IP):8200"
+        - name: SKIP_SETCAP
+          value: "true"
+        volumeMounts:
+        - name: vault-data
+          mountPath: /vault/data
+  volumeClaimTemplates:
+  - metadata:
+      name: vault-data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vault
+  namespace: vault-system
+spec:
+  selector:
+    app: vault
+  ports:
+  - port: 8200
+    targetPort: 8200
+    name: http
+  - port: 8201
+    targetPort: 8201
+    name: cluster

@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cert-manager
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: admin@example.com
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: vault-issuer
+spec:
+  vault:
+    server: http://vault.vault-system:8200
+    path: pki/sign/example-dot-com
+    auth:
+      kubernetes:
+        mountPath: /v1/auth/kubernetes
+        role: cert-manager
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: example-tls
+  namespace: default
+spec:
+  secretName: example-tls
+  duration: 2160h # 90 days
+  renewBefore: 720h # 30 days
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  commonName: app.example.com
+  dnsNames:
+  - app.example.com
+  - www.app.example.com
