@@ -1,0 +1,9 @@
+{
+  "artifact_id": "demo-app-1",
+  "signature": "MEUCIQDxxx...dddcaa90b70e4b19",
+  "signer": "demo-ci@company.com",
+  "timestamp": "2025-12-17T10:20:57.179486Z",
+  "algorithm": "ECDSA-SHA256",
+  "rekor_entry": "https://rekor.sigstore.dev/api/v1/log/entries/9520c9f4-2663-44ae-9d4c-7a4f784c5fe5",
+  "certificate": "-----BEGIN CERTIFICATE-----\nMIIB...xxx\n-----END CERTIFICATE-----"
+}

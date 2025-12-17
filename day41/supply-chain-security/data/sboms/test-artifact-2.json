@@ -1,0 +1,119 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "serialNumber": "urn:uuid:626d172f-0d6d-4889-ab96-6301ef4bc4a7",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2025-12-17T09:36:42.162390Z",
+    "component": {
+      "type": "container",
+      "name": "test-app:latest",
+      "version": "latest"
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "name": "fastapi",
+      "version": "0.109.0",
+      "purl": "pkg:pypi/fastapi@0.109.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "abc123..."
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "uvicorn",
+      "version": "0.27.0",
+      "purl": "pkg:pypi/uvicorn@0.27.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "def456..."
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pydantic",
+      "version": "2.5.3",
+      "purl": "pkg:pypi/pydantic@2.5.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "ghi789..."
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "openssl",
+      "version": "3.0.2",
+      "purl": "pkg:deb/debian/openssl@3.0.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "jkl012..."
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "libssl1.1",
+      "version": "1.1.1f",
+      "purl": "pkg:deb/debian/libssl1.1@1.1.1f",
+      "licenses": [
+        {
+          "license": {
+            "id": "OpenSSL"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "mno345..."
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "pkg:pypi/fastapi@0.109.0",
+      "dependsOn": [
+        "pkg:pypi/pydantic@2.5.3"
+      ]
+    }
+  ]
+}

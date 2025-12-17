@@ -1,0 +1,9 @@
+{
+  "artifact_id": "artifact-1765966499410",
+  "signature": "MEUCIQDxxx...74066f388389492e",
+  "signer": "ci-system@company.com",
+  "timestamp": "2025-12-17T10:15:04.679062Z",
+  "algorithm": "ECDSA-SHA256",
+  "rekor_entry": "https://rekor.sigstore.dev/api/v1/log/entries/a0566418-7340-43e0-8435-8a0a5f2f7428",
+  "certificate": "-----BEGIN CERTIFICATE-----\nMIIB...xxx\n-----END CERTIFICATE-----"
+}

@@ -1,0 +1,55 @@
+{
+  "artifact_id": "demo-app-1",
+  "scanned_at": "2025-12-17T10:20:59.324701Z",
+  "vulnerabilities": [
+    {
+      "id": "CVE-2023-44487",
+      "severity": "HIGH",
+      "cvss_score": 7.5,
+      "package": "openssl",
+      "version": "3.0.2",
+      "fixed_version": "3.0.12",
+      "description": "HTTP/2 Rapid Reset vulnerability in OpenSSL",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2023-44487"
+      ],
+      "exploit_available": true,
+      "patch_available": true
+    },
+    {
+      "id": "CVE-2023-12345",
+      "severity": "CRITICAL",
+      "cvss_score": 9.8,
+      "package": "libssl1.1",
+      "version": "1.1.1f",
+      "fixed_version": "1.1.1w",
+      "description": "Remote code execution in libssl",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2023-12345"
+      ],
+      "exploit_available": true,
+      "patch_available": true
+    },
+    {
+      "id": "CVE-2024-00001",
+      "severity": "MEDIUM",
+      "cvss_score": 5.3,
+      "package": "pydantic",
+      "version": "2.5.3",
+      "fixed_version": "2.6.0",
+      "description": "Input validation bypass",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2024-00001"
+      ],
+      "exploit_available": false,
+      "patch_available": true
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "critical": 1,
+    "high": 1,
+    "medium": 1,
+    "low": 0
+  }
+}

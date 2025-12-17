@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supply Chain Security Dashboard</title>
+    <link rel="icon" type="image/png" href="/favicon.ico">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: linear-gradient(135deg, #1e3a8a 0%, #10b981 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .stat-card h3 {
+            color: #888;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .stat-card .value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-card.critical .value {
+            color: #e74c3c;
+        }
+
+        .stat-card.warning .value {
+            color: #f39c12;
+        }
+
+        .stat-card.success .value {
+            color: #27ae60;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .panel {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .panel h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .artifact-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .artifact-item {
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .artifact-item:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .artifact-name {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .artifact-status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .status-verified {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-signed {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status-scanned {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .vuln-list {
+            margin-top: 10px;
+        }
+
+        .vuln-item {
+            padding: 10px;
+            background: #fff3f3;
+            border-left: 4px solid #e74c3c;
+            margin-bottom: 8px;
+            border-radius: 4px;
+        }
+
+        .vuln-item.high {
+            border-left-color: #f39c12;
+            background: #fff8e1;
+        }
+
+        .vuln-item.medium {
+            border-left-color: #3498db;
+            background: #e3f2fd;
+        }
+
+        .vuln-cve {
+            font-weight: bold;
+            color: #e74c3c;
+        }
+
+        .vuln-package {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95em;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .log-container {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .log-line {
+            margin-bottom: 5px;
+            opacity: 0;
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 Supply Chain Security Dashboard</h1>
+            <p>Real-time monitoring of software artifacts, vulnerabilities, and compliance</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Total Artifacts</h3>
+                <div class="value" id="totalArtifacts">0</div>
+            </div>
+            <div class="stat-card success">
+                <h3>Verified</h3>
+                <div class="value" id="verifiedArtifacts">0</div>
+            </div>
+            <div class="stat-card critical">
+                <h3>Critical Vulnerabilities</h3>
+                <div class="value" id="criticalVulns">0</div>
+            </div>
+            <div class="stat-card warning">
+                <h3>High Vulnerabilities</h3>
+                <div class="value" id="highVulns">0</div>
+            </div>
+        </div>
+
+        <div class="main-grid">
+            <div class="panel">
+                <h2>Registered Artifacts</h2>
+                <div class="artifact-list" id="artifactList">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Loading artifacts...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>Recent Vulnerabilities</h2>
+                <div class="vuln-list" id="vulnList">
+                    <p style="color: #888;">No vulnerabilities detected yet...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>Actions</h2>
+            <div class="actions">
+                <button class="btn btn-primary" onclick="createSampleArtifact()">Create Sample Artifact</button>
+                <button class="btn btn-primary" onclick="generateSBOM()">Generate SBOM</button>
+                <button class="btn btn-primary" onclick="signArtifact()">Sign Artifact</button>
+                <button class="btn btn-primary" onclick="scanVulnerabilities()">Scan Vulnerabilities</button>
+                <button class="btn btn-secondary" onclick="refreshDashboard()">Refresh Dashboard</button>
+            </div>
+
+            <div class="log-container" id="logContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        // Use current host to avoid mixed-origin issues when port-forwarded
+        const API_BASE = `${window.location.protocol}//${window.location.hostname}:8000`;
+        let currentArtifactId = null;
+        let logLines = [];
+        let refreshing = false;
+
+        async function fetchJson(url, options = {}) {
+            const response = await fetch(url, options);
+            const text = await response.text();
+
+            if (!response.ok) {
+                const message = text || response.statusText || 'Request failed';
+                throw new Error(`${response.status} ${message}`);
+            }
+
+            return text ? JSON.parse(text) : {};
+        }
+
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logLine = `[${timestamp}] ${message}`;
+            logLines.push(logLine);
+            
+            const logContainer = document.getElementById('logContainer');
+            const logElement = document.createElement('div');
+            logElement.className = 'log-line';
+            logElement.textContent = logLine;
+            logContainer.appendChild(logElement);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        async function fetchStats() {
+            const data = await fetchJson(`${API_BASE}/api/dashboard/stats`);
+
+            document.getElementById('totalArtifacts').textContent = data.artifacts.total;
+            document.getElementById('verifiedArtifacts').textContent = data.artifacts.verified;
+            document.getElementById('criticalVulns').textContent = data.vulnerabilities.critical;
+            document.getElementById('highVulns').textContent = data.vulnerabilities.high;
+        }
+
+        async function fetchArtifacts() {
+            const artifactList = document.getElementById('artifactList');
+
+            try {
+                const data = await fetchJson(`${API_BASE}/api/artifacts`);
+                if (data.artifacts.length === 0) {
+                    artifactList.innerHTML = '<p style="color: #888;">No artifacts registered yet...</p>';
+                    return;
+                }
+                
+                artifactList.innerHTML = '';
+                data.artifacts.forEach(artifact => {
+                    const item = document.createElement('div');
+                    item.className = 'artifact-item';
+                    
+                    const statusClass = artifact.status.toLowerCase().replace('_', '-');
+                    
+                    item.innerHTML = `
+                        <div class="artifact-name">${artifact.name}:${artifact.version}</div>
+                        <div class="artifact-status status-${statusClass}">${artifact.status}</div>
+                        ${artifact.vulnerabilities ? `
+                            <div style="margin-top: 10px; font-size: 0.9em; color: #666;">
+                                Vulnerabilities: 
+                                <span style="color: #e74c3c;">Critical: ${artifact.vulnerabilities.critical}</span> |
+                                <span style="color: #f39c12;">High: ${artifact.vulnerabilities.high}</span> |
+                                <span style="color: #3498db;">Medium: ${artifact.vulnerabilities.medium}</span>
+                            </div>
+                        ` : ''}
+                    `;
+                    
+                    artifactList.appendChild(item);
+                    
+                    if (!currentArtifactId && data.artifacts.length > 0) {
+                        currentArtifactId = artifact.id;
+                    }
+                });
+            } catch (error) {
+                artifactList.innerHTML = `<p style="color: #e74c3c;">Failed to load artifacts: ${error.message}</p>`;
+                throw error;
+            }
+        }
+
+        async function fetchRecentVulnerabilities() {
+            try {
+                const vulnList = document.getElementById('vulnList');
+                const artifactsResponse = await fetchJson(`${API_BASE}/api/artifacts`);
+                const scanResults = await Promise.all(
+                    artifactsResponse.artifacts.map(async (artifact) => {
+                        try {
+                            return await fetchJson(`${API_BASE}/api/scan/${artifact.id}`);
+                        } catch {
+                            return null;
+                        }
+                    })
+                );
+
+                const vulnerabilities = scanResults
+                    .filter(Boolean)
+                    .flatMap(scan => (scan.vulnerabilities || []).map(vuln => ({ ...vuln, artifact_id: scan.artifact_id })));
+
+                vulnList.innerHTML = '';
+
+                if (!vulnerabilities.length) {
+                    vulnList.innerHTML = '<p style="color: #888;">No vulnerabilities detected yet...</p>';
+                    return;
+                }
+
+                vulnerabilities.slice(0, 5).forEach(vuln => {
+                    const vulnItem = document.createElement('div');
+                    vulnItem.className = `vuln-item ${vuln.severity.toLowerCase()}`;
+                    vulnItem.innerHTML = `
+                        <div class="vuln-cve">${vuln.id} - ${vuln.severity}</div>
+                        <div class="vuln-package">${vuln.package}@${vuln.version} · ${vuln.artifact_id}</div>
+                        <div style="font-size: 0.85em; margin-top: 5px;">${vuln.description}</div>
+                    `;
+                    vulnList.appendChild(vulnItem);
+                });
+            } catch (error) {
+                document.getElementById('vulnList').innerHTML = `<p style="color: #e74c3c;">Failed to load vulnerabilities: ${error.message}</p>`;
+                throw error;
+            }
+        }
+
+        async function createSampleArtifact() {
+            try {
+                addLog('Creating sample artifact...');
+                
+                const artifact = {
+                    id: 'artifact-' + Date.now(),
+                    name: 'sample-app',
+                    version: '1.0.' + Math.floor(Math.random() * 100),
+                    type: 'container',
+                    registry: 'docker.io',
+                    digest: 'sha256:' + Math.random().toString(36).substring(2),
+                    created_at: new Date().toISOString(),
+                    status: 'UNSIGNED'
+                };
+                
+                const response = await fetch(`${API_BASE}/api/artifacts`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(artifact)
+                });
+                
+                const data = await response.json();
+                currentArtifactId = artifact.id;
+                
+                addLog(`✓ Artifact created: ${artifact.name}:${artifact.version}`);
+                addLog(`  Artifact ID: ${currentArtifactId}`);
+                
+                await refreshDashboard();
+            } catch (error) {
+                addLog(`✗ Failed to create artifact: ${error.message}`);
+            }
+        }
+
+        async function generateSBOM() {
+            if (!currentArtifactId) {
+                addLog('✗ No artifact selected. Create an artifact first.');
+                return;
+            }
+            
+            try {
+                addLog('Generating SBOM...');
+                
+                const response = await fetch(`${API_BASE}/api/sbom/generate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        artifact_id: currentArtifactId,
+                        image_name: 'sample-app:latest',
+                        format: 'cyclonedx'
+                    })
+                });
+                
+                const data = await response.json();
+                addLog(`✓ SBOM generated: ${data.component_count} components found`);
+                addLog(`  Format: CycloneDX`);
+                addLog(`  Path: ${data.sbom_path}`);
+                
+                await refreshDashboard();
+            } catch (error) {
+                addLog(`✗ Failed to generate SBOM: ${error.message}`);
+            }
+        }
+
+        async function signArtifact() {
+            if (!currentArtifactId) {
+                addLog('✗ No artifact selected. Create an artifact first.');
+                return;
+            }
+            
+            try {
+                addLog('Signing artifact with Cosign...');
+                
+                const response = await fetch(`${API_BASE}/api/sign`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        artifact_id: currentArtifactId,
+                        signer: 'ci-system@company.com'
+                    })
+                });
+                
+                const data = await response.json();
+                addLog(`✓ Artifact signed successfully`);
+                addLog(`  Signature: ${data.signature}`);
+                addLog(`  Rekor entry: ${data.rekor_entry}`);
+                
+                // Verify signature
+                addLog('Verifying signature...');
+                const verifyResponse = await fetch(`${API_BASE}/api/verify`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ artifact_id: currentArtifactId })
+                });
+                
+                const verifyData = await verifyResponse.json();
+                if (verifyData.verified) {
+                    addLog(`✓ Signature verified against Rekor`);
+                }
+                
+                await refreshDashboard();
+            } catch (error) {
+                addLog(`✗ Failed to sign artifact: ${error.message}`);
+            }
+        }
+
+        async function scanVulnerabilities() {
+            if (!currentArtifactId) {
+                addLog('✗ No artifact selected. Create an artifact first.');
+                return;
+            }
+            
+            try {
+                addLog('Scanning for vulnerabilities...');
+                
+                const response = await fetch(`${API_BASE}/api/scan/vulnerabilities`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ artifact_id: currentArtifactId })
+                });
+                
+                const data = await response.json();
+                const summary = data.summary;
+                
+                addLog(`✓ Vulnerability scan complete`);
+                addLog(`  Total vulnerabilities: ${summary.total}`);
+                addLog(`  Critical: ${summary.critical}, High: ${summary.high}, Medium: ${summary.medium}, Low: ${summary.low}`);
+                
+                if (summary.critical > 0 || summary.high > 0) {
+                    addLog(`⚠ WARNING: High-severity vulnerabilities detected!`);
+                }
+                
+                await refreshDashboard();
+            } catch (error) {
+                addLog(`✗ Failed to scan vulnerabilities: ${error.message}`);
+            }
+        }
+
+        async function refreshDashboard() {
+            if (refreshing) return;
+            refreshing = true;
+
+            const refreshButton = document.querySelector('button[onclick="refreshDashboard()"]');
+            if (refreshButton) {
+                refreshButton.disabled = true;
+                refreshButton.textContent = 'Refreshing...';
+            }
+
+            addLog('Refreshing dashboard...');
+
+            try {
+                await Promise.all([
+                    fetchStats(),
+                    fetchArtifacts(),
+                    fetchRecentVulnerabilities()
+                ]);
+                addLog('✓ Dashboard refreshed');
+            } catch (error) {
+                addLog(`✗ Refresh failed: ${error.message}`);
+            } finally {
+                if (refreshButton) {
+                    refreshButton.disabled = false;
+                    refreshButton.textContent = 'Refresh Dashboard';
+                }
+                refreshing = false;
+            }
+        }
+
+        // Initialize dashboard
+        window.addEventListener('load', () => {
+            addLog('Supply Chain Security Dashboard initialized');
+            addLog('Backend API: ' + API_BASE);
+            refreshDashboard();
+            
+            // Auto-refresh every 10 seconds
+            setInterval(refreshDashboard, 10000);
+        });
+    </script>
+</body>
+</html>

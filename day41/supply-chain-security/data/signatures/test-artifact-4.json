@@ -1,0 +1,9 @@
+{
+  "artifact_id": "test-artifact-4",
+  "signature": "MEUCIQDxxx...02a09a964e084020",
+  "signer": "test@example.com",
+  "timestamp": "2025-12-17T09:36:42.188347Z",
+  "algorithm": "ECDSA-SHA256",
+  "rekor_entry": "https://rekor.sigstore.dev/api/v1/log/entries/c1fb6992-1e40-441a-b9de-f8d84adb3dae",
+  "certificate": "-----BEGIN CERTIFICATE-----\nMIIB...xxx\n-----END CERTIFICATE-----"
+}
