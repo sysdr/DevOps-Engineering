@@ -1,0 +1,141 @@
+.validation-metrics-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.validation-metrics-card h2 {
+  color: #2d3748;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+}
+
+.validation-score {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.score-circle {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+  position: relative;
+  border: 8px solid;
+}
+
+.score-circle.excellent {
+  border-color: #48bb78;
+  background: linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%);
+}
+
+.score-circle.good {
+  border-color: #4299e1;
+  background: linear-gradient(135deg, #ebf8ff 0%, #bee3f8 100%);
+}
+
+.score-circle.warning {
+  border-color: #ed8936;
+  background: linear-gradient(135deg, #fffaf0 0%, #feebc8 100%);
+}
+
+.score-circle.critical {
+  border-color: #f56565;
+  background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+}
+
+.score-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #2d3748;
+}
+
+.score-unit {
+  font-size: 1.5rem;
+  color: #718096;
+  margin-left: 0.2rem;
+}
+
+.score-label {
+  color: #4a5568;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.validation-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: #f7fafc;
+  border-radius: 6px;
+}
+
+.detail-row span {
+  color: #718096;
+  font-size: 0.95rem;
+}
+
+.detail-row strong {
+  font-size: 1.1rem;
+  color: #2d3748;
+}
+
+.detail-row strong.passed {
+  color: #48bb78;
+}
+
+.detail-row strong.failed {
+  color: #f56565;
+}
+
+.failures-section {
+  background: #fff5f5;
+  border: 1px solid #feb2b2;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.failures-section h3 {
+  color: #c53030;
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.failures-list {
+  list-style: none;
+  padding: 0;
+}
+
+.failure-item {
+  padding: 0.5rem;
+  background: white;
+  border-left: 3px solid #f56565;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+  color: #742a2a;
+  font-size: 0.9rem;
+}
+
+.last-validation {
+  text-align: center;
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.last-validation small {
+  color: #a0aec0;
+  font-size: 0.85rem;
+}

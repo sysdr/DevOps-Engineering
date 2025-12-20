@@ -1,0 +1,104 @@
+.pipeline-status-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.pipeline-status-card h2 {
+  color: #2d3748;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+}
+
+.pipeline-section {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.pipeline-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.pipeline-section h3 {
+  color: #4a5568;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.status-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.status-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  background: #f7fafc;
+  border-radius: 6px;
+}
+
+.status-row span:first-child {
+  color: #718096;
+  font-size: 0.9rem;
+}
+
+.status-row strong {
+  color: #2d3748;
+  font-size: 1rem;
+}
+
+.status-row small {
+  color: #a0aec0;
+  font-size: 0.85rem;
+}
+
+.badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.badge.running {
+  background: #48bb78;
+  color: white;
+}
+
+.badge.active {
+  background: #4299e1;
+  color: white;
+}
+
+.badge.idle {
+  background: #cbd5e0;
+  color: #4a5568;
+}
+
+.kafka-topics {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.kafka-topics ul {
+  list-style: none;
+  padding-left: 1rem;
+}
+
+.kafka-topics li {
+  padding: 0.4rem 0.8rem;
+  background: #edf2f7;
+  border-left: 3px solid #4299e1;
+  border-radius: 4px;
+  margin-bottom: 0.4rem;
+  font-size: 0.9rem;
+  color: #2d3748;
+}
