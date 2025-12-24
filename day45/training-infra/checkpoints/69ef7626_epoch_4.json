@@ -1,0 +1,8 @@
+{
+  "job_id": "69ef7626",
+  "epoch": 4,
+  "best_loss": 2.0,
+  "model_state": "model_weights_epoch_4",
+  "optimizer_state": "optimizer_state_epoch_4",
+  "timestamp": "2025-12-24T12:10:20.454371"
+}

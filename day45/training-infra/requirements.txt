@@ -1,0 +1,11 @@
+torch==2.5.1
+torchvision==0.20.1
+optuna==4.1.0
+fastapi==0.115.6
+uvicorn==0.34.0
+websockets==14.1
+aiofiles==24.1.0
+psutil==6.1.1
+pytest==8.3.4
+pytest-asyncio==0.24.0
+httpx==0.28.1

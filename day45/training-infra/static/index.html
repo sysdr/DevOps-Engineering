@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Training Infrastructure Dashboard</title>
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 Model Training Infrastructure</h1>
+            <p>Distributed Training Orchestration & Resource Management</p>
+        </header>
+
+        <div class="controls">
+            <button onclick="submitJob()" class="btn-primary">Submit Training Job</button>
+            <button onclick="refreshData()" class="btn-secondary">Refresh</button>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="card">
+                <h2>Resource Utilization</h2>
+                <div id="resources"></div>
+            </div>
+
+            <div class="card">
+                <h2>System Metrics</h2>
+                <div id="metrics"></div>
+            </div>
+
+            <div class="card full-width">
+                <h2>Training Jobs</h2>
+                <div id="jobs"></div>
+            </div>
+
+            <div class="card full-width">
+                <h2>Training Progress</h2>
+                <div class="chart-container">
+                    <canvas id="trainingChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="/static/js/dashboard.js"></script>
+</body>
+</html>
