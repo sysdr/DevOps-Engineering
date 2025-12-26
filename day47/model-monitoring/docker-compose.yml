@@ -1,0 +1,98 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: monitoring
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  metrics-collector:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+    command: python backend/metrics_collector/collector.py
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/monitoring
+
+  drift-detector:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+    command: python backend/drift_detector/detector.py
+    ports:
+      - "8001:8001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/monitoring
+
+  performance-tracker:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+    command: python backend/performance_tracker/tracker.py
+    ports:
+      - "8002:8002"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/monitoring
+
+  explainability:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+    command: python backend/explainability/service.py
+    ports:
+      - "8003:8003"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/monitoring
+
+  fairness-monitor:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+    command: python backend/fairness_monitor/monitor.py
+    ports:
+      - "8004:8004"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/monitoring
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ../docker/Dockerfile.frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - metrics-collector
+      - drift-detector
+      - performance-tracker
+      - explainability
+      - fairness-monitor
+
+volumes:
+  postgres_data:
