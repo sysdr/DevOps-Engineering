@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MLOps Cost Optimizer</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💰</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #2563eb 0%, #10b981 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 32px;
+            background: linear-gradient(135deg, #2563eb 0%, #10b981 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #64748b;
+            font-size: 16px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 16px;
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .metric:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .metric-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .metric-value.success {
+            color: #10b981;
+        }
+
+        .metric-value.warning {
+            color: #f59e0b;
+        }
+
+        .metric-value.error {
+            color: #ef4444;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .bar {
+            height: 40px;
+            background: linear-gradient(90deg, #2563eb 0%, #10b981 100%);
+            border-radius: 8px;
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            color: white;
+            font-weight: 600;
+            transition: transform 0.3s;
+        }
+
+        .bar:hover {
+            transform: translateX(5px);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-badge.running {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-badge.queued {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-badge.interrupted {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2563eb 0%, #10b981 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #64748b;
+        }
+
+        .spinner {
+            border: 3px solid #f3f4f6;
+            border-top: 3px solid #2563eb;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th {
+            background: #f8fafc;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #475569;
+            font-size: 14px;
+        }
+
+        .table td {
+            padding: 12px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #1e293b;
+        }
+
+        .table tr:hover {
+            background: #f8fafc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MLOps Cost Optimization Platform</h1>
+            <p>Real-time cost tracking, optimization, and resource management</p>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <div class="card-title">Cost Overview</div>
+                <div class="metric">
+                    <span class="metric-label">Total Spend (7 days)</span>
+                    <span class="metric-value" id="totalCost">$0.00</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Training Costs</span>
+                    <span class="metric-value success" id="trainingCost">$0.00</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Inference Costs</span>
+                    <span class="metric-value warning" id="inferenceCost">$0.00</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Spot Instance Pool</div>
+                <div class="metric">
+                    <span class="metric-label">Utilization</span>
+                    <span class="metric-value" id="spotUtilization">0%</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Available</span>
+                    <span class="metric-value success" id="spotAvailable">0</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Allocated</span>
+                    <span class="metric-value" id="spotAllocated">0</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Job Queue</div>
+                <div class="metric">
+                    <span class="metric-label">Queued Jobs</span>
+                    <span class="metric-value" id="queuedJobs">0</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">P0 (Critical)</span>
+                    <span class="metric-value error" id="p0Jobs">0</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">P1/P2 (Normal/Low)</span>
+                    <span class="metric-value" id="p1p2Jobs">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <div class="card-title">Cost by Team</div>
+            <div id="teamCosts"></div>
+        </div>
+
+        <div class="chart-container">
+            <div class="card-title">Recent Activity</div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Event</th>
+                        <th>Team</th>
+                        <th>Cost</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="activityLog">
+                    <tr>
+                        <td colspan="5" class="loading">Connecting to server...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn btn-primary" onclick="submitJob()">Submit Test Job</button>
+            <button class="btn btn-secondary" onclick="simulateInterrupt()">Simulate Spot Interrupt</button>
+            <button class="btn btn-secondary" onclick="optimizeModel()">Optimize Model</button>
+        </div>
+    </div>
+
+    <script>
+        let ws;
+        const activities = [];
+
+        function connectWebSocket() {
+            ws = new WebSocket('ws://localhost:8000/ws/metrics');
+            
+            ws.onopen = () => {
+                console.log('WebSocket connected');
+                addActivity('System', 'Connected to MLOps Cost Optimizer', '-', '-', 'running');
+            };
+            
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                updateDashboard(data);
+            };
+            
+            ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+            };
+            
+            ws.onclose = () => {
+                console.log('WebSocket disconnected, reconnecting...');
+                setTimeout(connectWebSocket, 3000);
+            };
+        }
+
+        function updateDashboard(data) {
+            // Update cost metrics
+            const costSummary = data.cost_summary;
+            document.getElementById('totalCost').textContent = 
+                `$${costSummary.total_cost.toFixed(2)}`;
+            
+            // Update spot stats
+            const spotStats = data.spot_stats;
+            document.getElementById('spotUtilization').textContent = 
+                `${spotStats.utilization.toFixed(1)}%`;
+            document.getElementById('spotAvailable').textContent = spotStats.available;
+            document.getElementById('spotAllocated').textContent = spotStats.allocated;
+            
+            // Update queue stats
+            const queueStats = data.queue_stats;
+            document.getElementById('queuedJobs').textContent = queueStats.queued_jobs;
+            document.getElementById('p0Jobs').textContent = queueStats.p0_jobs;
+            document.getElementById('p1p2Jobs').textContent = 
+                queueStats.p1_jobs + queueStats.p2_jobs;
+            
+            // Update team costs chart
+            const teamCostsHtml = Object.entries(costSummary.by_team)
+                .map(([team, cost]) => {
+                    const width = (cost / costSummary.total_cost) * 100;
+                    return `<div class="bar" style="width: ${width}%">${team}: $${cost.toFixed(2)}</div>`;
+                })
+                .join('');
+            document.getElementById('teamCosts').innerHTML = teamCostsHtml || '<p class="loading">No data</p>';
+        }
+
+        function addActivity(team, event, project, cost, status) {
+            const time = new Date().toLocaleTimeString();
+            activities.unshift({time, event, team, cost, status});
+            
+            if (activities.length > 10) activities.pop();
+            
+            const html = activities.map(a => `
+                <tr>
+                    <td>${a.time}</td>
+                    <td>${a.event}</td>
+                    <td>${a.team}</td>
+                    <td>${a.cost}</td>
+                    <td><span class="status-badge ${a.status}">${a.status}</span></td>
+                </tr>
+            `).join('');
+            
+            document.getElementById('activityLog').innerHTML = html;
+        }
+
+        async function submitJob() {
+            const job = {
+                job_id: `job-${Date.now()}`,
+                name: "test-training",
+                team: "recommendations",
+                project: "user-ranking",
+                priority: "P1",
+                cpu_request: 8,
+                memory_request: 32,
+                gpu_request: 1,
+                estimated_duration: 2,
+                instance_type: "g4dn.2xlarge"
+            };
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/jobs/submit', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(job)
+                });
+                const result = await response.json();
+                addActivity(job.team, `Job ${job.job_id} submitted`, job.project, 
+                           '$1.50', result.status);
+                alert(`Job submitted: ${JSON.stringify(result, null, 2)}`);
+            } catch (error) {
+                console.error('Error submitting job:', error);
+            }
+        }
+
+        async function simulateInterrupt() {
+            try {
+                // Get list of spot instances
+                const instancesResponse = await fetch('http://localhost:8000/api/spot/instances');
+                const instancesData = await instancesResponse.json();
+                const instances = instancesData.instances || [];
+                
+                // Find an allocated instance or use first available
+                let targetInstance = instances.find(i => i.state === 'allocated');
+                if (!targetInstance && instances.length > 0) {
+                    targetInstance = instances[0];
+                }
+                
+                if (!targetInstance) {
+                    alert('No spot instances available to interrupt');
+                    return;
+                }
+                
+                // Interrupt the selected instance
+                const response = await fetch(`http://localhost:8000/api/spot/interrupt/${targetInstance.instance_id}`, {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                
+                if (result.error) {
+                    alert(`Error: ${result.error}`);
+                    addActivity('System', `Interrupt failed: ${result.error}`, '-', '-', 'interrupted');
+                } else {
+                    let message = `Instance ${result.instance_id} interrupted`;
+                    if (result.had_job) {
+                        if (result.recovery_successful) {
+                            message += `\n✓ Job ${result.job_id} recovered on ${result.new_instance_id}`;
+                            addActivity('System', `Spot interrupted, job recovered`, result.job_id, '-', 'running');
+                        } else {
+                            message += `\n✗ Job ${result.job_id} recovery failed: ${result.message}`;
+                            addActivity('System', `Spot interrupted, recovery failed`, result.job_id, '-', 'interrupted');
+                        }
+                    } else {
+                        message += '\n(No job was running)';
+                        addActivity('System', 'Spot instance interrupted (no job)', '-', '-', 'interrupted');
+                    }
+                    alert(message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert(`Error simulating interruption: ${error.message}`);
+            }
+        }
+
+        async function optimizeModel() {
+            try {
+                const response = await fetch('http://localhost:8000/api/optimize/inference?model_id=recommendation-v2&latency_sla=100', {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                addActivity('System', 'Model optimization complete', 'recommendations', 
+                           `$${result.monthly_cost.toFixed(2)}`, 'running');
+                alert(`Optimization result:\n${JSON.stringify(result, null, 2)}`);
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Connect on load
+        connectWebSocket();
+    </script>
+</body>
+</html>
