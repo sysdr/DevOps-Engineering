@@ -1,0 +1,155 @@
+.scheduler-metrics {
+  padding: 20px;
+}
+
+.scheduler-metrics h2 {
+  color: #e0e0e0;
+  margin-bottom: 30px;
+  font-size: 2em;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 25px;
+  margin-bottom: 40px;
+}
+
+.metric-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16px;
+  padding: 30px;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  transition: transform 0.3s ease;
+}
+
+.metric-card:hover {
+  transform: translateY(-5px);
+}
+
+.metric-icon {
+  font-size: 3em;
+  margin-bottom: 15px;
+}
+
+.metric-value {
+  font-size: 2.5em;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 10px;
+}
+
+.metric-label {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1em;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.job-distribution {
+  background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+  border-radius: 16px;
+  padding: 30px;
+  margin-bottom: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.job-distribution h3 {
+  color: #e0e0e0;
+  margin-bottom: 25px;
+  font-size: 1.3em;
+}
+
+.distribution-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.dist-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dist-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dist-label {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 600;
+  font-size: 1em;
+}
+
+.dist-count {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9em;
+}
+
+.dist-visual {
+  background: rgba(255, 255, 255, 0.1);
+  height: 40px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.dist-fill {
+  height: 100%;
+  transition: width 0.5s ease;
+  border-radius: 10px;
+}
+
+.dist-fill.mig {
+  background: linear-gradient(90deg, #48bb78 0%, #38a169 100%);
+}
+
+.dist-fill.spot {
+  background: linear-gradient(90deg, #4299e1 0%, #3182ce 100%);
+}
+
+.dist-fill.full {
+  background: linear-gradient(90deg, #ed8936 0%, #dd6b20 100%);
+}
+
+.scheduler-insights {
+  background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+  border-radius: 16px;
+  padding: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.scheduler-insights h3 {
+  color: #e0e0e0;
+  margin-bottom: 20px;
+  font-size: 1.3em;
+}
+
+.insight-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.insight-card {
+  background: rgba(102, 126, 234, 0.1);
+  border-radius: 12px;
+  padding: 20px;
+  border-left: 4px solid #667eea;
+}
+
+.insight-title {
+  color: #667eea;
+  font-weight: 600;
+  font-size: 1em;
+  margin-bottom: 10px;
+}
+
+.insight-text {
+  color: #e0e0e0;
+  font-size: 0.95em;
+  line-height: 1.6;
+}
