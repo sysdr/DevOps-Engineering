@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  control-plane:
+    build: ./backend
+    container_name: edge-control-plane
+    ports:
+      - "8000:8000"
+    networks:
+      - edge-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  edge-agent-1:
+    build: ./edge_agent
+    container_name: edge-agent-1
+    command: python main.py datacenter
+    depends_on:
+      - control-plane
+    networks:
+      - edge-network
+    environment:
+      - CONTROL_PLANE_URL=http://control-plane:8000
+
+  edge-agent-2:
+    build: ./edge_agent
+    container_name: edge-agent-2
+    command: python main.py factory
+    depends_on:
+      - control-plane
+    networks:
+      - edge-network
+    environment:
+      - CONTROL_PLANE_URL=http://control-plane:8000
+
+  edge-agent-3:
+    build: ./edge_agent
+    container_name: edge-agent-3
+    command: python main.py mobile
+    depends_on:
+      - control-plane
+    networks:
+      - edge-network
+    environment:
+      - CONTROL_PLANE_URL=http://control-plane:8000
+
+networks:
+  edge-network:
+    driver: bridge
