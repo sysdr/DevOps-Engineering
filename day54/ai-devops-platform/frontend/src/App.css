@@ -1,0 +1,381 @@
+.app {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.header {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 1.5rem 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header h1 {
+  font-size: 1.8rem;
+  color: #2d3748;
+  font-weight: 700;
+}
+
+.health-indicators {
+  display: flex;
+  gap: 1rem;
+}
+
+.health-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  background: #f7fafc;
+  text-transform: capitalize;
+}
+
+.health-badge .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #cbd5e0;
+}
+
+.health-badge.healthy .dot {
+  background: #48bb78;
+  box-shadow: 0 0 8px #48bb78;
+}
+
+.health-badge.down .dot {
+  background: #f56565;
+}
+
+.tabs {
+  display: flex;
+  gap: 0;
+  padding: 0 2rem;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.tabs button {
+  background: transparent;
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.tabs button:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.tabs button.active {
+  color: white;
+  border-bottom-color: white;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.main-content {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.panel {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.panel h2 {
+  font-size: 1.5rem;
+  color: #2d3748;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+textarea {
+  width: 100%;
+  min-height: 200px;
+  padding: 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-family: 'Monaco', 'Courier New', monospace;
+  font-size: 0.9rem;
+  resize: vertical;
+}
+
+textarea:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+button.primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 0.75rem 2rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  margin-top: 1rem;
+}
+
+button.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+button.primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.results {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: #f7fafc;
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
+}
+
+.issue {
+  padding: 1rem;
+  margin: 0.5rem 0;
+  border-radius: 6px;
+  border-left: 4px solid;
+}
+
+.issue.CRITICAL {
+  background: #fff5f5;
+  border-color: #fc8181;
+}
+
+.issue.HIGH {
+  background: #fffaf0;
+  border-color: #f6ad55;
+}
+
+.issue.MEDIUM {
+  background: #fffff0;
+  border-color: #f6e05e;
+}
+
+.issue.LOW {
+  background: #f0fff4;
+  border-color: #68d391;
+}
+
+.issue-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.severity-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: white;
+}
+
+.severity-badge.CRITICAL {
+  background: #fc8181;
+}
+
+.severity-badge.HIGH {
+  background: #f6ad55;
+}
+
+.severity-badge.MEDIUM {
+  background: #f6e05e;
+  color: #744210;
+}
+
+.severity-badge.LOW {
+  background: #68d391;
+  color: #22543d;
+}
+
+.log-entry {
+  padding: 0.75rem;
+  margin: 0.5rem 0;
+  border-radius: 6px;
+  background: white;
+  border-left: 4px solid #cbd5e0;
+  font-family: 'Monaco', 'Courier New', monospace;
+  font-size: 0.85rem;
+}
+
+.log-entry.anomaly {
+  border-left-color: #fc8181;
+  background: #fff5f5;
+}
+
+.log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.log-level {
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.log-level.ERROR, .log-level.CRITICAL {
+  background: #fc8181;
+  color: white;
+}
+
+.log-level.WARNING {
+  background: #f6ad55;
+  color: white;
+}
+
+.log-level.INFO {
+  background: #4299e1;
+  color: white;
+}
+
+.log-level.DEBUG {
+  background: #cbd5e0;
+  color: #2d3748;
+}
+
+.incident-card {
+  padding: 1.5rem;
+  margin: 1rem 0;
+  background: white;
+  border-radius: 8px;
+  border-left: 5px solid #fc8181;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.incident-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.incident-id {
+  font-family: 'Monaco', monospace;
+  color: #667eea;
+  font-weight: 600;
+}
+
+.status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: #fc8181;
+  color: white;
+}
+
+.alert-list {
+  margin: 1rem 0;
+  padding-left: 1.5rem;
+}
+
+.alert-item {
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+  background: #f7fafc;
+  border-radius: 4px;
+}
+
+.doc-section {
+  margin: 1.5rem 0;
+}
+
+.doc-section h3 {
+  color: #2d3748;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.doc-item {
+  padding: 1rem;
+  margin: 0.5rem 0;
+  background: #f7fafc;
+  border-radius: 6px;
+  border-left: 3px solid #667eea;
+}
+
+.doc-item-name {
+  font-weight: 600;
+  color: #667eea;
+  margin-bottom: 0.5rem;
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.metric-card {
+  padding: 1rem;
+  background: #f7fafc;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.metric-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #667eea;
+}
+
+.metric-label {
+  font-size: 0.85rem;
+  color: #718096;
+  margin-top: 0.5rem;
+}
+
+.score-circle {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: 700;
+  color: white;
+  margin: 1rem auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.score-circle.good {
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+}
+
+.score-circle.medium {
+  background: linear-gradient(135deg, #f6ad55 0%, #ed8936 100%);
+}
+
+.score-circle.poor {
+  background: linear-gradient(135deg, #fc8181 0%, #f56565 100%);
+}
