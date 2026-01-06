@@ -1,0 +1,85 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: ai_ethics
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  bias-detection:
+    build:
+      context: ./services/bias-detection
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/ai_ethics
+      REDIS_HOST: redis
+    depends_on:
+      - postgres
+      - redis
+
+  fairness-monitor:
+    build:
+      context: ./services/fairness-monitor
+      dockerfile: Dockerfile
+    ports:
+      - "8002:8002"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/ai_ethics
+      REDIS_HOST: redis
+    depends_on:
+      - postgres
+      - redis
+
+  explainability:
+    build:
+      context: ./services/explainability
+      dockerfile: Dockerfile
+    ports:
+      - "8003:8003"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/ai_ethics
+      REDIS_HOST: redis
+    depends_on:
+      - postgres
+      - redis
+
+  governance:
+    build:
+      context: ./services/governance
+      dockerfile: Dockerfile
+    ports:
+      - "8004:8004"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/ai_ethics
+      REDIS_HOST: redis
+    depends_on:
+      - postgres
+      - redis
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      - bias-detection
+      - fairness-monitor
+      - explainability
+      - governance
+
+volumes:
+  postgres_data:
