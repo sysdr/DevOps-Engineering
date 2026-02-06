@@ -1,4 +1,4 @@
-# Hands-On DevOps Engineering: From Zero to Production Scale
+## Hands-On DevOps Engineering: From Zero to Production Scale
 ## 60-Day Intensive Program Building Ultra-Scalable Platforms
 https://clouddc.substack.com
 ---
