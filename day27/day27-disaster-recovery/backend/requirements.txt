@@ -1,2 +1,0 @@
-# Minimal dependencies for Python 3.11
-# No external dependencies needed for this implementation

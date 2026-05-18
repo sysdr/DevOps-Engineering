@@ -1,1 +1,0 @@
-from .incident_automator import IncidentAutomator
